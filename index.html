@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box Stable</title>
+<title>Escape Box Premium</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -14,28 +14,35 @@ body{
   background:#0b1220;
   color:white;
   text-align:center;
-  padding-top:40px;
 }
 
+/* CARD */
 .card{
-  display:inline-block;
-  background:#1e293b;
-  padding:20px;
-  border-radius:20px;
-  width:90%;
-  max-width:380px;
+  padding-top:50px;
 }
 
-#lock{font-size:65px;}
+/* LOCK */
+#lock{
+  font-size:70px;
+  transition:0.4s;
+}
+.unlock{
+  transform:scale(1.3) rotate(10deg);
+  filter:drop-shadow(0 0 25px #22c55e);
+}
 
+/* DOOR */
 .door{
   width:180px;
   height:200px;
-  margin:15px auto;
+  margin:20px auto;
   background:#334155;
   position:relative;
   overflow:hidden;
   border-radius:12px;
+}
+.door.glow{
+  box-shadow:0 0 20px #22c55e,0 0 40px #22c55e;
 }
 
 .left,.right{
@@ -44,29 +51,46 @@ body{
   height:100%;
   top:0;
   background:#0b1220;
-  transition:0.7s;
+  transition:0.8s;
 }
-
 .left{left:0;}
 .right{right:0;}
 
 .open .left{transform:translateX(-100%);}
 .open .right{transform:translateX(100%);}
 
+/* BUTTON */
 button{
-  margin:8px;
-  padding:10px 15px;
+  padding:12px 16px;
+  margin:6px;
   border:none;
   border-radius:10px;
 }
 
-.good{color:#22c55e;font-size:24px;}
-.bad{color:#ef4444;font-size:24px;}
+/* RESULT */
+.good{color:#22c55e;font-size:26px;}
+.bad{color:#ef4444;font-size:22px;}
 
+/* CAMERA FULL OVERLAY (VISUAL ONLY) */
 #reader{
+  position:fixed;
+  top:0;
+  left:0;
   width:100%;
+  height:100%;
   display:none;
-  margin-top:15px;
+  background:black;
+  z-index:9999;
+}
+
+/* SCAN TEXT */
+.scanText{
+  position:fixed;
+  top:20px;
+  width:100%;
+  text-align:center;
+  font-size:18px;
+  z-index:10000;
 }
 </style>
 </head>
@@ -84,21 +108,22 @@ button{
   <div class="right"></div>
 </div>
 
-<div id="result">Start game</div>
+<div id="result">Step 1: Scan First Box</div>
 
 <button onclick="scanFirst()">📷 Scan First Box</button>
 <button onclick="scanSecond()">📷 Scan Second Box</button>
 <button onclick="resetGame()">Reset</button>
 
-<div id="reader"></div>
-
 </div>
+
+<div id="reader"></div>
+<div id="scanText" class="scanText"></div>
 
 <script>
 
 let firstBox = null;
 
-/* QR URL SUPPORT */
+/* INIT QR LINK */
 function init(){
   let box = new URLSearchParams(window.location.search).get("box");
   if(box){
@@ -106,14 +131,43 @@ function init(){
     sessionStorage.setItem("firstBox", box);
 
     document.getElementById("result").innerHTML =
-      "✔ First box (QR): <b>"+box+"</b><br>👉 Scan second box";
+      "✔ First box (QR): <b>"+box+"</b><br>👉 Step 2: Scan second box";
   }
 }
 
-/* SCAN FIRST (SIMPLE LIKE YOUR ORIGINAL) */
+/* SOUND */
+function beep(ok){
+  let ctx = new AudioContext();
+  let o = ctx.createOscillator();
+  o.frequency.value = ok ? 900 : 200;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),120);
+}
+
+/* VIBRATE */
+function vibrate(ok){
+  if(navigator.vibrate){
+    navigator.vibrate(ok ? [100,50,100] : [300]);
+  }
+}
+
+/* CAMERA SHOW */
+function showCamera(text){
+  document.getElementById("reader").style.display = "block";
+  document.getElementById("scanText").innerText = text;
+}
+
+/* CAMERA HIDE */
+function hideCamera(){
+  document.getElementById("reader").style.display = "none";
+  document.getElementById("scanText").innerText = "";
+}
+
+/* SCAN FIRST */
 function scanFirst(){
 
-  document.getElementById("reader").style.display = "block";
+  showCamera("Scan FIRST box");
 
   let scanner = new Html5Qrcode("reader");
 
@@ -129,14 +183,16 @@ function scanFirst(){
       sessionStorage.setItem("firstBox", firstBox);
 
       scanner.stop();
+      hideCamera();
 
       document.getElementById("result").innerHTML =
-        "✔ First box: <b>"+firstBox+"</b><br>👉 Scan second box";
+        "✔ First box: <b>"+firstBox+"</b><br>👉 Step 2: Scan second box";
+
     }
   );
 }
 
-/* SCAN SECOND (KEEP SAME STYLE) */
+/* SCAN SECOND */
 function scanSecond(){
 
   if(!firstBox){
@@ -144,7 +200,7 @@ function scanSecond(){
     return;
   }
 
-  document.getElementById("reader").style.display = "block";
+  showCamera("Scan SECOND box");
 
   let scanner = new Html5Qrcode("reader");
 
@@ -158,6 +214,7 @@ function scanSecond(){
         : text;
 
       scanner.stop();
+      hideCamera();
 
       check(secondBox);
     }
@@ -169,11 +226,16 @@ function check(secondBox){
 
   let ok = (firstBox === secondBox);
 
+  beep(ok);
+  vibrate(ok);
+
   if(ok){
     document.getElementById("lock").innerText="🔓";
-    document.getElementById("door").classList.add("open");
+    document.getElementById("lock").classList.add("unlock");
+    document.getElementById("door").classList.add("open","glow");
+
     document.getElementById("result").innerHTML =
-      "<div class='good'>UNLOCKED 🎉</div>";
+      "<div class='good'>TREASURE UNLOCKED 🎉</div>";
   }else{
     document.getElementById("result").innerHTML =
       "<div class='bad'>WRONG ❌</div>";
