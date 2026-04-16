@@ -2,45 +2,115 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Escape Box Game</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Box Game FINAL</title>
+
 <style>
 body{
-  font-family: Arial;
-  text-align:center;
-  background:#0f172a;
+  margin:0;
+  font-family:Arial;
+  background:#0b1220;
   color:white;
-  margin-top:80px;
+  text-align:center;
+  padding-top:60px;
 }
+
 .card{
-  background:#1e293b;
-  padding:30px;
-  border-radius:20px;
   display:inline-block;
-  min-width:300px;
+  background:#1e293b;
+  padding:25px;
+  border-radius:20px;
+  width:90%;
+  max-width:350px;
 }
-.big{
-  font-size:40px;
-  margin:20px 0;
+
+/* LOCK */
+#lock{
+  font-size:70px;
+  transition:0.5s;
 }
-.green{color:#22c55e;}
-.red{color:#ef4444;}
+
+.unlock{
+  transform:scale(1.3) rotate(10deg);
+  filter:drop-shadow(0 0 20px #22c55e);
+}
+
+/* DOOR */
+.door{
+  width:180px;
+  height:220px;
+  margin:20px auto;
+  position:relative;
+  overflow:hidden;
+  border-radius:12px;
+  background:#334155;
+}
+
+.left,.right{
+  position:absolute;
+  width:50%;
+  height:100%;
+  top:0;
+  background:#0b1220;
+  transition:0.8s ease;
+}
+
+.left{left:0;}
+.right{right:0;}
+
+.open .left{transform:translateX(-100%);}
+.open .right{transform:translateX(100%);}
+
+/* RESULT */
+#result{
+  font-size:24px;
+  margin-top:10px;
+}
+
+.good{
+  color:#22c55e;
+  font-size:28px;
+  animation:pop 0.5s ease;
+}
+
+.bad{
+  color:#ef4444;
+  font-size:28px;
+}
+
+@keyframes pop{
+  0%{transform:scale(0.5);opacity:0;}
+  100%{transform:scale(1);opacity:1;}
+}
+
 button{
-  margin-top:20px;
-  padding:10px 20px;
+  margin-top:15px;
+  padding:8px 15px;
   border:none;
   border-radius:10px;
 }
 </style>
 </head>
+
 <body>
 
 <div class="card">
-<h2>🔐 Escape Box Game</h2>
-<div id="content">Loading...</div>
-<button onclick="resetGame()">Reset</button>
+  <h2>🔐 Escape Box Game</h2>
+
+  <div id="lock">🔒</div>
+
+  <div class="door" id="door">
+    <div class="left"></div>
+    <div class="right"></div>
+  </div>
+
+  <div id="result">Scan QR untuk mula</div>
+
+  <button onclick="resetGame()">Reset</button>
 </div>
 
 <script>
+
 function getParam(name){
   return new URLSearchParams(window.location.search).get(name);
 }
@@ -48,47 +118,64 @@ function getParam(name){
 let box = getParam("box");
 let first = localStorage.getItem("firstBox");
 
-function playBeep(ok){
+/* SOUND */
+function beep(ok){
   let ctx = new (window.AudioContext || window.webkitAudioContext)();
-  let osc = ctx.createOscillator();
-  osc.type = "square";
-  osc.frequency.value = ok ? 800 : 200;
-  osc.connect(ctx.destination);
-  osc.start();
-  setTimeout(()=>osc.stop(),200);
+  let o = ctx.createOscillator();
+  o.type="square";
+  o.frequency.value = ok ? 800 : 200;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
 }
 
-function render(){
+/* ANIMATION */
+function unlockAnim(ok){
+  if(ok){
+    document.getElementById("lock").innerText="🔓";
+    document.getElementById("lock").classList.add("unlock");
+    document.getElementById("door").classList.add("open");
+  }
+}
+
+/* MAIN LOGIC */
+function run(){
+
   if(!box){
-    document.getElementById("content").innerHTML = "Scan QR box untuk mula";
     return;
   }
 
   if(!first){
     localStorage.setItem("firstBox", box);
-    document.getElementById("content").innerHTML =
-      "✔ Box pertama: " + box + "<br>👉 Scan box kedua";
+    document.getElementById("result").innerHTML =
+      "✔ First box: <b>"+box+"</b><br>👉 Scan second box";
     return;
   }
 
   let ok = (first === box);
 
-  playBeep(ok);
+  beep(ok);
+  unlockAnim(ok);
 
-  document.getElementById("content").innerHTML =
-    ok ?
-    "<div class='big green'>BETUL ✅</div>" :
-    "<div class='big red'>SALAH ❌</div>";
+  if(ok){
+    document.getElementById("result").innerHTML =
+      "<div class='good'>TREASURE UNLOCKED 🎉</div>";
+  }else{
+    document.getElementById("result").innerHTML =
+      "<div class='bad'>WRONG COMBINATION ❌</div>";
+  }
 
   localStorage.removeItem("firstBox");
 }
 
+/* RESET */
 function resetGame(){
   localStorage.removeItem("firstBox");
   location.href = location.pathname;
 }
 
-render();
+run();
+
 </script>
 
 </body>
