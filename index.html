@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box Game APP</title>
+<title>Escape Box FIX</title>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
 
@@ -26,25 +26,16 @@ body{
   max-width:380px;
 }
 
-#lock{
-  font-size:65px;
-  transition:0.4s;
-}
+#lock{font-size:65px;}
 
-.unlock{
-  transform:scale(1.3) rotate(10deg);
-  filter:drop-shadow(0 0 20px #22c55e);
-}
-
-/* door */
 .door{
   width:180px;
   height:200px;
   margin:15px auto;
+  background:#334155;
   position:relative;
   overflow:hidden;
   border-radius:12px;
-  background:#334155;
 }
 
 .left,.right{
@@ -53,7 +44,7 @@ body{
   height:100%;
   top:0;
   background:#0b1220;
-  transition:0.8s ease;
+  transition:0.7s;
 }
 
 .left{left:0;}
@@ -63,20 +54,19 @@ body{
 .open .right{transform:translateX(100%);}
 
 button{
-  margin:8px;
   padding:10px 15px;
+  margin:8px;
   border:none;
   border-radius:10px;
-  cursor:pointer;
 }
 
-.good{color:#22c55e;font-size:24px;}
-.bad{color:#ef4444;font-size:24px;}
+.good{color:#22c55e;font-size:22px;}
+.bad{color:#ef4444;font-size:22px;}
 
 #reader{
   width:100%;
   display:none;
-  margin-top:15px;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -94,10 +84,10 @@ button{
   <div class="right"></div>
 </div>
 
-<div id="result">Start scan first box</div>
+<div id="result">Scan first box</div>
 
-<button onclick="startFirstScan()">📷 Scan First Box</button>
-<button onclick="startSecondScan()">📷 Scan Second Box</button>
+<button onclick="startFirst()">📷 Scan First Box</button>
+<button onclick="startSecond()">📷 Scan Second Box</button>
 <button onclick="resetGame()">Reset</button>
 
 <div id="reader"></div>
@@ -107,26 +97,37 @@ button{
 <script>
 
 let firstBox = sessionStorage.getItem("firstBox") || null;
-let secondBox = null;
 let scanner = null;
 
-/* PARSE QR */
-function parseBox(text){
+/* SAFE PARSE */
+function parse(text){
   return text.includes("box=")
     ? text.split("box=")[1]
     : text;
 }
 
 /* STOP SCANNER SAFE */
-function stopScanner(callback){
-  scanner.stop().then(() => {
-    document.getElementById("reader").style.display = "none";
-    callback();
-  });
+function stopScan(cb){
+  if(scanner){
+    scanner.stop().then(() => {
+      scanner.clear();
+      scanner = null;
+
+      document.getElementById("reader").style.display = "none";
+
+      cb();
+    }).catch(() => {
+      scanner = null;
+      document.getElementById("reader").style.display = "none";
+      cb();
+    });
+  } else {
+    cb();
+  }
 }
 
-/* FIRST SCAN */
-function startFirstScan(){
+/* START FIRST */
+function startFirst(){
 
   document.getElementById("reader").style.display = "block";
 
@@ -137,23 +138,25 @@ function startFirstScan(){
     { fps: 10, qrbox: 250 },
     (text) => {
 
-      firstBox = parseBox(text);
+      firstBox = parse(text);
       sessionStorage.setItem("firstBox", firstBox);
 
-      stopScanner(() => {
+      stopScan(() => {
         document.getElementById("result").innerHTML =
-          "✔ First box: <b>"+firstBox+"</b><br>👉 Now scan second box";
+          "✔ First box: <b>"+firstBox+"</b><br>👉 Now scan second";
       });
 
     }
-  );
+  ).catch(err => {
+    alert("Camera error: " + err);
+  });
 }
 
-/* SECOND SCAN */
-function startSecondScan(){
+/* START SECOND */
+function startSecond(){
 
   if(!firstBox){
-    alert("Please scan FIRST box first!");
+    alert("Scan FIRST box dulu!");
     return;
   }
 
@@ -166,55 +169,55 @@ function startSecondScan(){
     { fps: 10, qrbox: 250 },
     (text) => {
 
-      secondBox = parseBox(text);
+      let secondBox = parse(text);
 
-      stopScanner(() => checkResult());
+      stopScan(() => check(secondBox));
 
     }
-  );
+  ).catch(err => {
+    alert("Camera error: " + err);
+  });
 }
 
-/* CHECK RESULT */
-function checkResult(){
+/* CHECK */
+function check(secondBox){
 
   let ok = (firstBox === secondBox);
 
   beep(ok);
   vibrate(ok);
-  animate(ok);
+  anim(ok);
 
   document.getElementById("result").innerHTML =
     ok
-    ? "<div class='good'>TREASURE UNLOCKED 🎉</div>"
-    : "<div class='bad'>WRONG COMBINATION ❌</div>";
+    ? "<div class='good'>UNLOCKED 🎉</div>"
+    : "<div class='bad'>WRONG ❌</div>";
 
   sessionStorage.removeItem("firstBox");
 }
 
-/* ANIMATION */
-function animate(ok){
+/* ANIM */
+function anim(ok){
   if(ok){
     document.getElementById("lock").innerText="🔓";
-    document.getElementById("lock").classList.add("unlock");
     document.getElementById("door").classList.add("open");
   }
 }
 
 /* SOUND */
 function beep(ok){
-  let ctx = new (window.AudioContext || window.webkitAudioContext)();
+  let ctx = new AudioContext();
   let o = ctx.createOscillator();
-  o.type = "square";
-  o.frequency.value = ok ? 900 : 200;
+  o.frequency.value = ok ? 800 : 200;
   o.connect(ctx.destination);
   o.start();
-  setTimeout(()=>o.stop(),120);
+  setTimeout(()=>o.stop(),150);
 }
 
-/* VIBRATION */
+/* VIBRATE */
 function vibrate(ok){
   if(navigator.vibrate){
-    navigator.vibrate(ok ? [100,50,100] : [300]);
+    navigator.vibrate(ok ? 100 : 300);
   }
 }
 
