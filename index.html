@@ -21,7 +21,7 @@ body{
   padding:25px;
   border-radius:20px;
   width:90%;
-  max-width:350px;
+  max-width:360px;
 }
 
 /* LOCK */
@@ -31,11 +31,11 @@ body{
 }
 
 .unlock{
-  transform:scale(1.3) rotate(10deg);
+  transform:scale(1.3) rotate(12deg);
   filter:drop-shadow(0 0 20px #22c55e);
 }
 
-/* DOOR */
+/* DOOR ANIMATION */
 .door{
   width:180px;
   height:220px;
@@ -63,7 +63,7 @@ body{
 
 /* RESULT */
 #result{
-  font-size:24px;
+  font-size:22px;
   margin-top:10px;
 }
 
@@ -111,18 +111,14 @@ button{
 
 <script>
 
-function getParam(name){
-  return new URLSearchParams(window.location.search).get(name);
-}
-
-let box = getParam("box");
+let box = new URLSearchParams(window.location.search).get("box");
 let first = localStorage.getItem("firstBox");
 
 /* SOUND */
 function beep(ok){
   let ctx = new (window.AudioContext || window.webkitAudioContext)();
   let o = ctx.createOscillator();
-  o.type="square";
+  o.type = "square";
   o.frequency.value = ok ? 800 : 200;
   o.connect(ctx.destination);
   o.start();
@@ -132,26 +128,28 @@ function beep(ok){
 /* ANIMATION */
 function unlockAnim(ok){
   if(ok){
-    document.getElementById("lock").innerText="🔓";
+    document.getElementById("lock").innerText = "🔓";
     document.getElementById("lock").classList.add("unlock");
     document.getElementById("door").classList.add("open");
   }
 }
 
-/* MAIN LOGIC */
+/* MAIN LOGIC (AUTO PAIRING SYSTEM) */
 function run(){
 
-  if(!box){
-    return;
-  }
+  if(!box) return;
 
+  // FIRST SCAN (store only)
   if(!first){
     localStorage.setItem("firstBox", box);
+
     document.getElementById("result").innerHTML =
-      "✔ First box: <b>"+box+"</b><br>👉 Scan second box";
+      "✔ First scan: <b>"+box+"</b><br>👉 Scan another box";
+
     return;
   }
 
+  // SECOND SCAN (compare)
   let ok = (first === box);
 
   beep(ok);
