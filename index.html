@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box Game PRO</title>
+<title>Escape Box Game PRO+</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
 body{
@@ -12,21 +14,21 @@ body{
   background:#0b1220;
   color:white;
   text-align:center;
-  padding-top:60px;
+  padding-top:40px;
 }
 
 .card{
   display:inline-block;
   background:#1e293b;
-  padding:25px;
+  padding:20px;
   border-radius:20px;
   width:90%;
-  max-width:360px;
+  max-width:380px;
 }
 
 #lock{
-  font-size:70px;
-  transition:0.5s;
+  font-size:65px;
+  transition:0.4s;
 }
 
 .unlock{
@@ -36,8 +38,8 @@ body{
 
 .door{
   width:180px;
-  height:220px;
-  margin:20px auto;
+  height:200px;
+  margin:15px auto;
   position:relative;
   overflow:hidden;
   border-radius:12px;
@@ -59,24 +61,21 @@ body{
 .open .left{transform:translateX(-100%);}
 .open .right{transform:translateX(100%);}
 
-#result{
-  font-size:20px;
-  margin-top:10px;
-}
-
-.good{color:#22c55e;font-size:26px;animation:pop 0.5s;}
-.bad{color:#ef4444;font-size:26px;}
-
-@keyframes pop{
-  0%{transform:scale(0.5);opacity:0;}
-  100%{transform:scale(1);opacity:1;}
-}
-
 button{
-  margin-top:15px;
-  padding:8px 15px;
+  margin-top:10px;
+  padding:10px 15px;
   border:none;
   border-radius:10px;
+  cursor:pointer;
+}
+
+.good{color:#22c55e;font-size:24px;}
+.bad{color:#ef4444;font-size:24px;}
+
+#reader{
+  width:100%;
+  display:none;
+  margin-top:15px;
 }
 </style>
 </head>
@@ -84,36 +83,86 @@ button{
 <body>
 
 <div class="card">
-  <h2>🔐 Escape Box Game</h2>
 
-  <div id="lock">🔒</div>
+<h2>🔐 Escape Box Game</h2>
 
-  <div class="door" id="door">
-    <div class="left"></div>
-    <div class="right"></div>
-  </div>
+<div id="lock">🔒</div>
 
-  <div id="result">Scan QR untuk mula</div>
+<div class="door" id="door">
+  <div class="left"></div>
+  <div class="right"></div>
+</div>
 
-  <button onclick="resetGame()">Reset</button>
+<div id="result">Scan QR Box A untuk mula</div>
+
+<button onclick="startSecondScan()">📷 Scan Second Box</button>
+<button onclick="resetGame()">Reset</button>
+
+<div id="reader"></div>
+
 </div>
 
 <script>
 
-let box = new URLSearchParams(window.location.search).get("box");
-let first = sessionStorage.getItem("firstBox"); 
-// 👆 guna sessionStorage (lebih clean dari localStorage)
+let firstBox = null;
+let secondBox = null;
 
-function beep(ok){
-  let ctx = new (window.AudioContext || window.webkitAudioContext)();
-  let o = ctx.createOscillator();
-  o.type = "square";
-  o.frequency.value = ok ? 800 : 200;
-  o.connect(ctx.destination);
-  o.start();
-  setTimeout(()=>o.stop(),150);
+function getParam(name){
+  return new URLSearchParams(window.location.search).get(name);
 }
 
+/* STEP 1 - QR A SCAN */
+function initFirstScan(){
+  let box = getParam("box");
+  if(box){
+    firstBox = box;
+    sessionStorage.setItem("firstBox", box);
+
+    document.getElementById("result").innerHTML =
+      "✔ First box locked: <b>"+box+"</b><br>👉 Click button to scan second box";
+  } else {
+    firstBox = sessionStorage.getItem("firstBox");
+  }
+}
+
+/* CAMERA SCAN */
+function startSecondScan(){
+
+  document.getElementById("reader").style.display = "block";
+
+  let scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (decodedText) => {
+
+      secondBox = decodedText.split("box=")[1] || decodedText;
+
+      scanner.stop();
+
+      checkResult();
+    }
+  );
+}
+
+/* RESULT */
+function checkResult(){
+
+  let ok = (firstBox === secondBox);
+
+  beep(ok);
+  unlockAnim(ok);
+
+  document.getElementById("result").innerHTML =
+    ok
+    ? "<div class='good'>TREASURE UNLOCKED 🎉</div>"
+    : "<div class='bad'>WRONG COMBINATION ❌</div>";
+
+  sessionStorage.removeItem("firstBox");
+}
+
+/* ANIMATION */
 function unlockAnim(ok){
   if(ok){
     document.getElementById("lock").innerText="🔓";
@@ -122,45 +171,23 @@ function unlockAnim(ok){
   }
 }
 
-/* STEP FLOW SYSTEM */
-function run(){
-
-  if(!box) return;
-
-  // STEP 1 (FIRST SCAN)
-  if(!first){
-    sessionStorage.setItem("firstBox", box);
-
-    document.getElementById("result").innerHTML =
-      "✔ First scan locked: <b>"+box+"</b><br><br>👉 Now scan SECOND box";
-
-    return;
-  }
-
-  // STEP 2 (SECOND SCAN)
-  let ok = (first === box);
-
-  beep(ok);
-  unlockAnim(ok);
-
-  if(ok){
-    document.getElementById("result").innerHTML =
-      "<div class='good'>TREASURE UNLOCKED 🎉</div>";
-  }else{
-    document.getElementById("result").innerHTML =
-      "<div class='bad'>WRONG COMBINATION ❌</div>";
-  }
-
-  sessionStorage.removeItem("firstBox");
+/* SOUND */
+function beep(ok){
+  let ctx = new AudioContext();
+  let o = ctx.createOscillator();
+  o.frequency.value = ok ? 800 : 200;
+  o.connect(ctx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
 }
 
-/* RESET GAME */
+/* RESET */
 function resetGame(){
   sessionStorage.removeItem("firstBox");
   location.href = location.pathname;
 }
 
-run();
+initFirstScan();
 
 </script>
 
