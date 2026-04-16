@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box FIX</title>
+<title>Escape Box Full Camera</title>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
 
@@ -14,24 +14,33 @@ body{
   background:#0b1220;
   color:white;
   text-align:center;
-  padding-top:40px;
 }
 
+/* FULLSCREEN CAMERA */
+#reader{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100vw;
+  height:100vh;
+  display:none;
+  background:black;
+  z-index:9999;
+}
+
+/* UI */
 .card{
-  display:inline-block;
-  background:#1e293b;
-  padding:20px;
-  border-radius:20px;
-  width:90%;
-  max-width:380px;
+  padding-top:60px;
 }
 
-#lock{font-size:65px;}
+#lock{
+  font-size:70px;
+}
 
 .door{
   width:180px;
   height:200px;
-  margin:15px auto;
+  margin:20px auto;
   background:#334155;
   position:relative;
   overflow:hidden;
@@ -54,20 +63,14 @@ body{
 .open .right{transform:translateX(100%);}
 
 button{
-  padding:10px 15px;
-  margin:8px;
+  padding:12px 18px;
   border:none;
   border-radius:10px;
+  margin-top:10px;
 }
 
 .good{color:#22c55e;font-size:22px;}
 .bad{color:#ef4444;font-size:22px;}
-
-#reader{
-  width:100%;
-  display:none;
-  margin-top:10px;
-}
 </style>
 </head>
 
@@ -90,44 +93,24 @@ button{
 <button onclick="startSecond()">📷 Scan Second Box</button>
 <button onclick="resetGame()">Reset</button>
 
-<div id="reader"></div>
-
 </div>
+
+<div id="reader"></div>
 
 <script>
 
 let firstBox = sessionStorage.getItem("firstBox") || null;
 let scanner = null;
 
-/* SAFE PARSE */
+/* PARSE */
 function parse(text){
   return text.includes("box=")
     ? text.split("box=")[1]
     : text;
 }
 
-/* STOP SCANNER SAFE */
-function stopScan(cb){
-  if(scanner){
-    scanner.stop().then(() => {
-      scanner.clear();
-      scanner = null;
-
-      document.getElementById("reader").style.display = "none";
-
-      cb();
-    }).catch(() => {
-      scanner = null;
-      document.getElementById("reader").style.display = "none";
-      cb();
-    });
-  } else {
-    cb();
-  }
-}
-
-/* START FIRST */
-function startFirst(){
+/* OPEN CAMERA FULLSCREEN */
+function openCamera(onScan){
 
   document.getElementById("reader").style.display = "block";
 
@@ -135,24 +118,47 @@ function startFirst(){
 
   scanner.start(
     { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
+    {
+      fps: 10,
+      qrbox: { width: 250, height: 250 }
+    },
     (text) => {
-
-      firstBox = parse(text);
-      sessionStorage.setItem("firstBox", firstBox);
-
-      stopScan(() => {
-        document.getElementById("result").innerHTML =
-          "✔ First box: <b>"+firstBox+"</b><br>👉 Now scan second";
-      });
-
+      let box = parse(text);
+      stopCamera(() => onScan(box));
     }
   ).catch(err => {
     alert("Camera error: " + err);
   });
 }
 
-/* START SECOND */
+/* STOP CAMERA */
+function stopCamera(cb){
+  if(scanner){
+    scanner.stop().then(() => {
+      scanner.clear();
+      scanner = null;
+      document.getElementById("reader").style.display = "none";
+      cb();
+    }).catch(() => {
+      scanner = null;
+      document.getElementById("reader").style.display = "none";
+      cb();
+    });
+  }
+}
+
+/* FIRST SCAN */
+function startFirst(){
+  openCamera((box) => {
+    firstBox = box;
+    sessionStorage.setItem("firstBox", box);
+
+    document.getElementById("result").innerHTML =
+      "✔ First box: <b>"+box+"</b><br>👉 Scan second box";
+  });
+}
+
+/* SECOND SCAN */
 function startSecond(){
 
   if(!firstBox){
@@ -160,43 +166,24 @@ function startSecond(){
     return;
   }
 
-  document.getElementById("reader").style.display = "block";
+  openCamera((box) => {
 
-  scanner = new Html5Qrcode("reader");
+    let ok = (firstBox === box);
 
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: 250 },
-    (text) => {
+    beep(ok);
+    vibrate(ok);
+    anim(ok);
 
-      let secondBox = parse(text);
+    document.getElementById("result").innerHTML =
+      ok
+      ? "<div class='good'>UNLOCKED 🎉</div>"
+      : "<div class='bad'>WRONG ❌</div>";
 
-      stopScan(() => check(secondBox));
-
-    }
-  ).catch(err => {
-    alert("Camera error: " + err);
+    sessionStorage.removeItem("firstBox");
   });
 }
 
-/* CHECK */
-function check(secondBox){
-
-  let ok = (firstBox === secondBox);
-
-  beep(ok);
-  vibrate(ok);
-  anim(ok);
-
-  document.getElementById("result").innerHTML =
-    ok
-    ? "<div class='good'>UNLOCKED 🎉</div>"
-    : "<div class='bad'>WRONG ❌</div>";
-
-  sessionStorage.removeItem("firstBox");
-}
-
-/* ANIM */
+/* ANIMATION */
 function anim(ok){
   if(ok){
     document.getElementById("lock").innerText="🔓";
@@ -208,23 +195,23 @@ function anim(ok){
 function beep(ok){
   let ctx = new AudioContext();
   let o = ctx.createOscillator();
-  o.frequency.value = ok ? 800 : 200;
+  o.frequency.value = ok ? 900 : 200;
   o.connect(ctx.destination);
   o.start();
-  setTimeout(()=>o.stop(),150);
+  setTimeout(()=>o.stop(),120);
 }
 
-/* VIBRATE */
+/* VIBRATION */
 function vibrate(ok){
   if(navigator.vibrate){
-    navigator.vibrate(ok ? 100 : 300);
+    navigator.vibrate(ok ? 120 : 300);
   }
 }
 
 /* RESET */
 function resetGame(){
   sessionStorage.clear();
-  location.href = location.pathname;
+  location.reload();
 }
 
 </script>
