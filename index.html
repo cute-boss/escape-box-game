@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box Game PRO+</title>
+<title>Escape Box Game APP</title>
 
-<script src="https://unpkg.com/html5-qrcode"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
 
 <style>
 body{
@@ -36,6 +36,7 @@ body{
   filter:drop-shadow(0 0 20px #22c55e);
 }
 
+/* door */
 .door{
   width:180px;
   height:200px;
@@ -62,7 +63,7 @@ body{
 .open .right{transform:translateX(100%);}
 
 button{
-  margin-top:10px;
+  margin:8px;
   padding:10px 15px;
   border:none;
   border-radius:10px;
@@ -93,8 +94,9 @@ button{
   <div class="right"></div>
 </div>
 
-<div id="result">Scan QR Box A untuk mula</div>
+<div id="result">Start scan first box</div>
 
+<button onclick="startFirstScan()">📷 Scan First Box</button>
 <button onclick="startSecondScan()">📷 Scan Second Box</button>
 <button onclick="resetGame()">Reset</button>
 
@@ -104,55 +106,82 @@ button{
 
 <script>
 
-let firstBox = null;
+let firstBox = sessionStorage.getItem("firstBox") || null;
 let secondBox = null;
+let scanner = null;
 
-function getParam(name){
-  return new URLSearchParams(window.location.search).get(name);
+/* PARSE QR */
+function parseBox(text){
+  return text.includes("box=")
+    ? text.split("box=")[1]
+    : text;
 }
 
-/* STEP 1 - QR A SCAN */
-function initFirstScan(){
-  let box = getParam("box");
-  if(box){
-    firstBox = box;
-    sessionStorage.setItem("firstBox", box);
-
-    document.getElementById("result").innerHTML =
-      "✔ First box locked: <b>"+box+"</b><br>👉 Click button to scan second box";
-  } else {
-    firstBox = sessionStorage.getItem("firstBox");
-  }
+/* STOP SCANNER SAFE */
+function stopScanner(callback){
+  scanner.stop().then(() => {
+    document.getElementById("reader").style.display = "none";
+    callback();
+  });
 }
 
-/* CAMERA SCAN */
-function startSecondScan(){
+/* FIRST SCAN */
+function startFirstScan(){
 
   document.getElementById("reader").style.display = "block";
 
-  let scanner = new Html5Qrcode("reader");
+  scanner = new Html5Qrcode("reader");
 
   scanner.start(
     { facingMode: "environment" },
     { fps: 10, qrbox: 250 },
-    (decodedText) => {
+    (text) => {
 
-      secondBox = decodedText.split("box=")[1] || decodedText;
+      firstBox = parseBox(text);
+      sessionStorage.setItem("firstBox", firstBox);
 
-      scanner.stop();
+      stopScanner(() => {
+        document.getElementById("result").innerHTML =
+          "✔ First box: <b>"+firstBox+"</b><br>👉 Now scan second box";
+      });
 
-      checkResult();
     }
   );
 }
 
-/* RESULT */
+/* SECOND SCAN */
+function startSecondScan(){
+
+  if(!firstBox){
+    alert("Please scan FIRST box first!");
+    return;
+  }
+
+  document.getElementById("reader").style.display = "block";
+
+  scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 10, qrbox: 250 },
+    (text) => {
+
+      secondBox = parseBox(text);
+
+      stopScanner(() => checkResult());
+
+    }
+  );
+}
+
+/* CHECK RESULT */
 function checkResult(){
 
   let ok = (firstBox === secondBox);
 
   beep(ok);
-  unlockAnim(ok);
+  vibrate(ok);
+  animate(ok);
 
   document.getElementById("result").innerHTML =
     ok
@@ -163,7 +192,7 @@ function checkResult(){
 }
 
 /* ANIMATION */
-function unlockAnim(ok){
+function animate(ok){
   if(ok){
     document.getElementById("lock").innerText="🔓";
     document.getElementById("lock").classList.add("unlock");
@@ -173,21 +202,27 @@ function unlockAnim(ok){
 
 /* SOUND */
 function beep(ok){
-  let ctx = new AudioContext();
+  let ctx = new (window.AudioContext || window.webkitAudioContext)();
   let o = ctx.createOscillator();
-  o.frequency.value = ok ? 800 : 200;
+  o.type = "square";
+  o.frequency.value = ok ? 900 : 200;
   o.connect(ctx.destination);
   o.start();
-  setTimeout(()=>o.stop(),150);
+  setTimeout(()=>o.stop(),120);
+}
+
+/* VIBRATION */
+function vibrate(ok){
+  if(navigator.vibrate){
+    navigator.vibrate(ok ? [100,50,100] : [300]);
+  }
 }
 
 /* RESET */
 function resetGame(){
-  sessionStorage.removeItem("firstBox");
+  sessionStorage.clear();
   location.href = location.pathname;
 }
-
-initFirstScan();
 
 </script>
 
