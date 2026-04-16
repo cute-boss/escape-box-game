@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box FIX</title>
+<title>Escape Box Game FIXED</title>
 
 <script src="https://unpkg.com/html5-qrcode@2.3.9/minified/html5-qrcode.min.js"></script>
 
@@ -23,18 +23,24 @@ body{
   padding:20px;
   border-radius:20px;
   width:90%;
-  max-width:360px;
+  max-width:380px;
 }
 
-#lock{font-size:65px;}
+#lock{font-size:70px;}
+
+.unlock{
+  transform:scale(1.2);
+  filter:drop-shadow(0 0 15px #22c55e);
+}
 
 .door{
   width:180px;
   height:200px;
   margin:15px auto;
-  background:#334155;
   position:relative;
   overflow:hidden;
+  background:#334155;
+  border-radius:10px;
 }
 
 .left,.right{
@@ -54,68 +60,58 @@ body{
 
 button{
   padding:10px 15px;
-  margin-top:10px;
+  margin:8px;
   border:none;
   border-radius:10px;
 }
 
-.good{color:#22c55e;font-size:22px;}
-.bad{color:#ef4444;font-size:22px;}
-
 #reader{
   width:100%;
   display:none;
-  margin-top:10px;
+  margin-top:15px;
 }
+
+.good{color:#22c55e;font-size:22px;}
+.bad{color:#ef4444;font-size:22px;}
 </style>
 </head>
 
 <body>
 
 <div class="card">
+  <h2>🔐 Escape Box Game</h2>
 
-<h2>🔐 Escape Box Game</h2>
+  <div id="lock">🔒</div>
 
-<div id="lock">🔒</div>
+  <div class="door" id="door">
+    <div class="left"></div>
+    <div class="right"></div>
+  </div>
 
-<div class="door" id="door">
-  <div class="left"></div>
-  <div class="right"></div>
-</div>
+  <div id="result">Scan QR Box A dulu</div>
 
-<div id="result">Scan QR Box A dulu</div>
+  <button onclick="startScan()">📷 Scan Second Box</button>
+  <button onclick="resetGame()">Reset</button>
 
-<button onclick="startScan()">📷 Scan Box Kedua</button>
-<button onclick="resetGame()">Reset</button>
-
-<div id="reader"></div>
-
+  <div id="reader"></div>
 </div>
 
 <script>
 
-let firstBox = sessionStorage.getItem("firstBox");
-let scanner;
+let firstBox = sessionStorage.getItem("firstBox") || null;
+let scanner = null;
 
-function getBox(){
-  let url = new URL(window.location.href);
-  return url.searchParams.get("box");
-}
-
-/* STEP 1 */
-function init(){
-  let box = getBox();
-
+function getBoxFromURL(){
+  let box = new URLSearchParams(window.location.search).get("box");
   if(box){
     firstBox = box;
     sessionStorage.setItem("firstBox", box);
 
     document.getElementById("result").innerHTML =
-      "✔ Box pertama: <b>"+box+"</b><br>👉 tekan button scan second box";
+      "✔ First box locked: <b>"+box+"</b><br>👉 Now click scan second box";
   }
 }
 
-/* STEP 2 SCAN */
 function startScan(){
 
   document.getElementById("reader").style.display = "block";
@@ -126,38 +122,32 @@ function startScan(){
 
     scanner.start(
       { facingMode: "environment" },
-      { fps: 10, qrbox: 250 },
-      (decodedText) => {
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      (text) => {
 
-        // SAFE parse (no split fragile)
-        let secondBox = decodedText.includes("box=")
-          ? decodedText.substring(decodedText.indexOf("box=")+4)
-          : decodedText;
+        // extract box value safely
+        let secondBox = text.includes("box=")
+          ? text.split("box=")[1]
+          : text;
 
-        stopScan(secondBox);
+        scanner.stop().then(() => {
+
+          document.getElementById("reader").style.display = "none";
+
+          check(secondBox);
+
+        });
 
       }
-
     );
 
   });
 
 }
 
-/* STOP SAFELY */
-function stopScan(secondBox){
-
-  scanner.stop().then(() => {
-
-    document.getElementById("reader").style.display = "none";
-
-    check(secondBox.trim());
-
-  });
-
-}
-
-/* CHECK */
 function check(secondBox){
 
   let ok = (firstBox === secondBox);
@@ -173,7 +163,6 @@ function check(secondBox){
   sessionStorage.removeItem("firstBox");
 }
 
-/* ANIM */
 function anim(ok){
   if(ok){
     document.getElementById("lock").innerText="🔓";
@@ -181,7 +170,6 @@ function anim(ok){
   }
 }
 
-/* SOUND */
 function beep(ok){
   let ctx = new AudioContext();
   let o = ctx.createOscillator();
@@ -191,13 +179,12 @@ function beep(ok){
   setTimeout(()=>o.stop(),150);
 }
 
-/* RESET */
 function resetGame(){
   sessionStorage.clear();
   location.href = location.pathname;
 }
 
-init();
+getBoxFromURL();
 
 </script>
 
