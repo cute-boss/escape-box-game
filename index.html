@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Escape Box Game</title>
+<style>
+body{
+  font-family: Arial;
+  text-align:center;
+  background:#0f172a;
+  color:white;
+  margin-top:80px;
+}
+.card{
+  background:#1e293b;
+  padding:30px;
+  border-radius:20px;
+  display:inline-block;
+  min-width:300px;
+}
+.big{
+  font-size:40px;
+  margin:20px 0;
+}
+.green{color:#22c55e;}
+.red{color:#ef4444;}
+button{
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+<h2>🔐 Escape Box Game</h2>
+<div id="content">Loading...</div>
+<button onclick="resetGame()">Reset</button>
+</div>
+
+<script>
+function getParam(name){
+  return new URLSearchParams(window.location.search).get(name);
+}
+
+let box = getParam("box");
+let first = localStorage.getItem("firstBox");
+
+function playBeep(ok){
+  let ctx = new (window.AudioContext || window.webkitAudioContext)();
+  let osc = ctx.createOscillator();
+  osc.type = "square";
+  osc.frequency.value = ok ? 800 : 200;
+  osc.connect(ctx.destination);
+  osc.start();
+  setTimeout(()=>osc.stop(),200);
+}
+
+function render(){
+  if(!box){
+    document.getElementById("content").innerHTML = "Scan QR box untuk mula";
+    return;
+  }
+
+  if(!first){
+    localStorage.setItem("firstBox", box);
+    document.getElementById("content").innerHTML =
+      "✔ Box pertama: " + box + "<br>👉 Scan box kedua";
+    return;
+  }
+
+  let ok = (first === box);
+
+  playBeep(ok);
+
+  document.getElementById("content").innerHTML =
+    ok ?
+    "<div class='big green'>BETUL ✅</div>" :
+    "<div class='big red'>SALAH ❌</div>";
+
+  localStorage.removeItem("firstBox");
+}
+
+function resetGame(){
+  localStorage.removeItem("firstBox");
+  location.href = location.pathname;
+}
+
+render();
+</script>
+
+</body>
+</html>
