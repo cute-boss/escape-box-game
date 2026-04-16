@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Escape Box Premium</title>
+<title>Escape Box Game</title>
 
 <script src="https://unpkg.com/html5-qrcode"></script>
 
@@ -16,26 +16,14 @@ body{
   text-align:center;
 }
 
-/* CARD */
-.card{
-  padding-top:50px;
-}
+h2{margin-top:20px}
 
-/* LOCK */
-#lock{
-  font-size:70px;
-  transition:0.4s;
-}
-.unlock{
-  transform:scale(1.3) rotate(10deg);
-  filter:drop-shadow(0 0 25px #22c55e);
-}
+#lock{font-size:70px;}
 
-/* DOOR */
 .door{
   width:180px;
   height:200px;
-  margin:20px auto;
+  margin:10px auto;
   background:#334155;
   position:relative;
   overflow:hidden;
@@ -59,19 +47,35 @@ body{
 .open .left{transform:translateX(-100%);}
 .open .right{transform:translateX(100%);}
 
-/* BUTTON */
-button{
-  padding:12px 16px;
-  margin:6px;
+/* START BUTTON */
+#startBtn{
+  margin-top:20px;
+  padding:12px 18px;
   border:none;
-  border-radius:10px;
+  border-radius:12px;
+  background:#22c55e;
+  color:white;
+  font-size:16px;
 }
 
-/* RESULT */
-.good{color:#22c55e;font-size:26px;}
-.bad{color:#ef4444;font-size:22px;}
+/* PROGRESS */
+.progress{
+  width:80%;
+  height:10px;
+  background:#334155;
+  margin:15px auto;
+  border-radius:10px;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:#22c55e;
+  transition:0.5s;
+}
 
-/* CAMERA FULL OVERLAY (VISUAL ONLY) */
+.good{color:#22c55e;font-size:26px;}
+.bad{color:#ef4444;font-size:24px;}
+
 #reader{
   position:fixed;
   top:0;
@@ -83,21 +87,16 @@ button{
   z-index:9999;
 }
 
-/* SCAN TEXT */
-.scanText{
+#scanText{
   position:fixed;
   top:20px;
   width:100%;
   text-align:center;
-  font-size:18px;
-  z-index:10000;
 }
 </style>
 </head>
 
 <body>
-
-<div class="card">
 
 <h2>🔐 Escape Box Game</h2>
 
@@ -108,149 +107,132 @@ button{
   <div class="right"></div>
 </div>
 
-<div id="result">Step 1: Scan First Box</div>
-
-<button onclick="scanFirst()">📷 Scan First Box</button>
-<button onclick="scanSecond()">📷 Scan Second Box</button>
-<button onclick="resetGame()">Reset</button>
-
+<div class="progress">
+  <div class="bar" id="bar"></div>
 </div>
 
+<div id="result">Tekan Start untuk mula</div>
+
+<button id="startBtn" onclick="startGame()">▶ Start Game</button>
+
 <div id="reader"></div>
-<div id="scanText" class="scanText"></div>
+<div id="scanText"></div>
 
 <script>
 
-let firstBox = null;
+let firstBox=null;
+let stage=1;
 
-/* INIT QR LINK */
-function init(){
-  let box = new URLSearchParams(window.location.search).get("box");
-  if(box){
-    firstBox = box;
-    sessionStorage.setItem("firstBox", box);
-
-    document.getElementById("result").innerHTML =
-      "✔ First box (QR): <b>"+box+"</b><br>👉 Step 2: Scan second box";
-  }
-}
-
-/* SOUND */
-function beep(ok){
-  let ctx = new AudioContext();
-  let o = ctx.createOscillator();
-  o.frequency.value = ok ? 900 : 200;
+/* 🔊 GAME SOUND (MARIO STYLE SIMPLE) */
+function playStartSound(){
+  let ctx=new AudioContext();
+  let o=ctx.createOscillator();
+  o.frequency.value=600;
   o.connect(ctx.destination);
   o.start();
-  setTimeout(()=>o.stop(),120);
+  setTimeout(()=>o.stop(),150);
+}
+
+/* VOICE */
+function speak(text){
+  let msg=new SpeechSynthesisUtterance(text);
+  msg.lang="ms-MY";
+  speechSynthesis.speak(msg);
 }
 
 /* VIBRATE */
 function vibrate(ok){
   if(navigator.vibrate){
-    navigator.vibrate(ok ? [100,50,100] : [300]);
+    navigator.vibrate(ok?[100,50,100]:[300]);
   }
 }
 
-/* CAMERA SHOW */
-function showCamera(text){
-  document.getElementById("reader").style.display = "block";
-  document.getElementById("scanText").innerText = text;
+/* PROGRESS */
+function updateBar(){
+  document.getElementById("bar").style.width=
+    stage===1?"50%":"100%";
 }
 
-/* CAMERA HIDE */
-function hideCamera(){
-  document.getElementById("reader").style.display = "none";
-  document.getElementById("scanText").innerText = "";
+/* CAMERA UI */
+function showCam(text){
+  document.getElementById("reader").style.display="block";
+  document.getElementById("scanText").innerText=text;
+}
+function hideCam(){
+  document.getElementById("reader").style.display="none";
+  document.getElementById("scanText").innerText="";
 }
 
-/* SCAN FIRST */
-function scanFirst(){
+/* MAIN SCAN (UNCHANGED STYLE) */
+function scan(){
 
-  showCamera("Scan FIRST box");
+  showCam(stage===1?"Scan BOX PERTAMA":"Scan BOX KEDUA");
 
-  let scanner = new Html5Qrcode("reader");
+  let scanner=new Html5Qrcode("reader");
 
   scanner.start(
-    { facingMode: "environment" },
-    { fps:10, qrbox:250 },
+    {facingMode:"environment"},
+    {fps:10,qrbox:250},
     (text)=>{
 
-      firstBox = text.includes("box=")
-        ? text.split("box=")[1]
-        : text;
-
-      sessionStorage.setItem("firstBox", firstBox);
+      let box=text.includes("box=")
+        ?text.split("box=")[1]
+        :text;
 
       scanner.stop();
-      hideCamera();
+      hideCam();
 
-      document.getElementById("result").innerHTML =
-        "✔ First box: <b>"+firstBox+"</b><br>👉 Step 2: Scan second box";
+      if(stage===1){
+        firstBox=box;
+        stage=2;
+        updateBar();
 
-    }
-  );
-}
+        document.getElementById("result").innerHTML=
+          "✔ Box pertama: <b>"+box+"</b><br>Scan box kedua";
 
-/* SCAN SECOND */
-function scanSecond(){
+        speak("Box pertama berjaya");
 
-  if(!firstBox){
-    alert("Scan first box dulu!");
-    return;
-  }
-
-  showCamera("Scan SECOND box");
-
-  let scanner = new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode: "environment" },
-    { fps:10, qrbox:250 },
-    (text)=>{
-
-      let secondBox = text.includes("box=")
-        ? text.split("box=")[1]
-        : text;
-
-      scanner.stop();
-      hideCamera();
-
-      check(secondBox);
+        setTimeout(scan,800); // auto next
+      }else{
+        check(box);
+      }
     }
   );
 }
 
 /* RESULT */
-function check(secondBox){
+function check(second){
 
-  let ok = (firstBox === secondBox);
+  let ok=(firstBox===second);
 
-  beep(ok);
   vibrate(ok);
 
   if(ok){
     document.getElementById("lock").innerText="🔓";
-    document.getElementById("lock").classList.add("unlock");
     document.getElementById("door").classList.add("open","glow");
 
-    document.getElementById("result").innerHTML =
-      "<div class='good'>TREASURE UNLOCKED 🎉</div>";
+    document.getElementById("result").innerHTML=
+      "<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
+
+    speak("Tahniah anda betul");
   }else{
-    document.getElementById("result").innerHTML =
-      "<div class='bad'>WRONG ❌</div>";
+    document.getElementById("result").innerHTML=
+      "<div class='bad'>SALAH, SILA CUBA LAGI</div>";
+
+    speak("Salah, sila cuba lagi");
   }
-
-  sessionStorage.removeItem("firstBox");
 }
 
-/* RESET */
-function resetGame(){
-  sessionStorage.clear();
-  location.href = location.pathname;
-}
+/* START */
+function startGame(){
+  document.getElementById("startBtn").style.display="none";
 
-init();
+  playStartSound();
+  speak("Permainan bermula");
+
+  updateBar();
+  scan();
+}
 
 </script>
 
