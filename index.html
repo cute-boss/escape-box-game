@@ -26,42 +26,14 @@ body{
   max-width:380px;
 }
 
-/* ICON RESULT */
-#icon{
-  font-size:80px;
-  margin:10px 0;
-}
-
-/* LOCK */
 #lock{font-size:65px;}
 
-/* DOOR */
-.door{
-  width:180px;
-  height:200px;
-  margin:15px auto;
-  position:relative;
-  overflow:hidden;
-  border-radius:12px;
-  background:#334155;
+/* ICON RESULT */
+#icon{
+  font-size:90px;
+  margin:15px 0;
 }
 
-.left,.right{
-  position:absolute;
-  width:50%;
-  height:100%;
-  top:0;
-  background:#0b1220;
-  transition:0.8s;
-}
-
-.left{left:0;}
-.right{right:0;}
-
-.open .left{transform:translateX(-100%);}
-.open .right{transform:translateX(100%);}
-
-/* TEXT */
 .good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
 
@@ -87,19 +59,14 @@ button{
 
 <h2>🔐 Escape Box Game</h2>
 
-<div id="icon"></div>
-
 <div id="lock">🔒</div>
 
-<div class="door" id="door">
-  <div class="left"></div>
-  <div class="right"></div>
-</div>
+<div id="icon"></div>
 
 <div id="result">Imbas kod untuk mula permainan</div>
 
-<button onclick="startFirstScan()">📷 Scan Box Pertama</button>
-<button onclick="startSecondScan()">📷 Scan Box Kedua</button>
+<button id="btn1" onclick="startFirstScan()">📷 SCAN BOX PERTAMA</button>
+<button id="btn2" onclick="startSecondScan()">📷 SCAN BOX KEDUA</button>
 <button id="backBtn" onclick="resetGame()" style="display:none;">🔁 KEMBALI</button>
 
 <div id="reader"></div>
@@ -115,48 +82,27 @@ let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c
 bgMusic.loop = true;
 bgMusic.volume = 0.2;
 
-/* 🔊 SOUND EFFECT */
-function playSound(type){
+/* 🔊 SOUND EFFECT (ringkas, tak kacau camera) */
+function playBeep(ok){
   let ctx = new (window.AudioContext || window.webkitAudioContext)();
   let o = ctx.createOscillator();
-  let g = ctx.createGain();
-
-  o.connect(g);
-  g.connect(ctx.destination);
-
-  if(type==="success"){
-    o.frequency.setValueAtTime(500, ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(900, ctx.currentTime+0.2);
-  }
-  else if(type==="fail"){
-    o.frequency.setValueAtTime(300, ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.2);
-  }
-  else if(type==="start"){
-    o.frequency.setValueAtTime(600, ctx.currentTime);
-    o.frequency.linearRampToValueAtTime(800, ctx.currentTime+0.1);
-  }
-
+  o.frequency.value = ok ? 800 : 200;
+  o.connect(ctx.destination);
   o.start();
-  setTimeout(()=>o.stop(),200);
+  setTimeout(()=>o.stop(),150);
 }
 
-/* INIT QR LINK */
-function init(){
-  let box = new URLSearchParams(window.location.search).get("box");
-  if(box){
-    firstBox = box;
-    sessionStorage.setItem("firstBox", box);
-
-    document.getElementById("result").innerHTML =
-      "✔ Box pertama: <b>"+box+"</b><br>Scan box kedua";
-  }
+/* 🗣️ VOICE BM */
+function speak(text){
+  let msg = new SpeechSynthesisUtterance(text);
+  msg.lang = "ms-MY";
+  speechSynthesis.speak(msg);
 }
 
 /* SCAN FIRST */
 function startFirstScan(){
 
-  playSound("start");
+  // start music once user interact
   bgMusic.play().catch(()=>{});
 
   document.getElementById("reader").style.display="block";
@@ -215,27 +161,33 @@ function check(secondBox){
 
   let ok = (firstBox === secondBox);
 
-  setTimeout(()=>{
-    playSound(ok?"success":"fail");
-  },100);
+  playBeep(ok);
 
   if(ok){
     document.getElementById("icon").innerHTML="✔";
     document.getElementById("icon").style.color="#22c55e";
 
     document.getElementById("lock").innerText="🔓";
-    document.getElementById("door").classList.add("open");
 
     document.getElementById("result").innerHTML =
       "<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
+
+    speak("Tahniah anda betul");
   }else{
     document.getElementById("icon").innerHTML="✖";
     document.getElementById("icon").style.color="#ef4444";
 
     document.getElementById("result").innerHTML =
-      "<div class='bad'>SALAH, SILA CUBA LAGI</div>";
+      "<div class='bad'>SALAH SILA CUBA LAGI</div>";
+
+    speak("Salah, sila cuba lagi");
   }
 
+  // hide scan buttons
+  document.getElementById("btn1").style.display="none";
+  document.getElementById("btn2").style.display="none";
+
+  // show back button
   document.getElementById("backBtn").style.display="inline-block";
 
   sessionStorage.removeItem("firstBox");
@@ -248,8 +200,6 @@ function resetGame(){
   sessionStorage.clear();
   location.href = location.pathname;
 }
-
-init();
 
 </script>
 
