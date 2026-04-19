@@ -14,23 +14,36 @@ body{
   background:#0b1220;
   color:white;
   text-align:center;
+  padding-top:40px;
 }
 
-h2{margin-top:20px}
+.card{
+  display:inline-block;
+  background:#1e293b;
+  padding:20px;
+  border-radius:20px;
+  width:90%;
+  max-width:380px;
+}
 
-#lock{font-size:70px;}
+/* ICON RESULT */
+#icon{
+  font-size:80px;
+  margin:10px 0;
+}
 
+/* LOCK */
+#lock{font-size:65px;}
+
+/* DOOR */
 .door{
   width:180px;
   height:200px;
-  margin:10px auto;
-  background:#334155;
+  margin:15px auto;
   position:relative;
   overflow:hidden;
   border-radius:12px;
-}
-.door.glow{
-  box-shadow:0 0 20px #22c55e,0 0 40px #22c55e;
+  background:#334155;
 }
 
 .left,.right{
@@ -41,64 +54,40 @@ h2{margin-top:20px}
   background:#0b1220;
   transition:0.8s;
 }
+
 .left{left:0;}
 .right{right:0;}
 
 .open .left{transform:translateX(-100%);}
 .open .right{transform:translateX(100%);}
 
-/* START BUTTON */
-#startBtn{
-  margin-top:20px;
-  padding:12px 18px;
-  border:none;
-  border-radius:12px;
-  background:#22c55e;
-  color:white;
-  font-size:16px;
-}
-
-/* PROGRESS */
-.progress{
-  width:80%;
-  height:10px;
-  background:#334155;
-  margin:15px auto;
-  border-radius:10px;
-}
-.bar{
-  height:100%;
-  width:0%;
-  background:#22c55e;
-  transition:0.5s;
-}
-
-.good{color:#22c55e;font-size:26px;}
+/* TEXT */
+.good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
 
-#reader{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  display:none;
-  background:black;
-  z-index:9999;
+button{
+  margin-top:10px;
+  padding:10px 15px;
+  border:none;
+  border-radius:10px;
 }
 
-#scanText{
-  position:fixed;
-  top:20px;
+/* CAMERA */
+#reader{
   width:100%;
-  text-align:center;
+  display:none;
+  margin-top:15px;
 }
 </style>
 </head>
 
 <body>
 
+<div class="card">
+
 <h2>🔐 Escape Box Game</h2>
+
+<div id="icon"></div>
 
 <div id="lock">🔒</div>
 
@@ -107,132 +96,160 @@ h2{margin-top:20px}
   <div class="right"></div>
 </div>
 
-<div class="progress">
-  <div class="bar" id="bar"></div>
-</div>
+<div id="result">Imbas kod untuk mula permainan</div>
 
-<div id="result">Tekan Start untuk mula</div>
-
-<button id="startBtn" onclick="startGame()">▶ Start Game</button>
+<button onclick="startFirstScan()">📷 Scan Box Pertama</button>
+<button onclick="startSecondScan()">📷 Scan Box Kedua</button>
+<button id="backBtn" onclick="resetGame()" style="display:none;">🔁 KEMBALI</button>
 
 <div id="reader"></div>
-<div id="scanText"></div>
+
+</div>
 
 <script>
 
-let firstBox=null;
-let stage=1;
+let firstBox = null;
 
-/* 🔊 GAME SOUND (MARIO STYLE SIMPLE) */
-function playStartSound(){
-  let ctx=new AudioContext();
-  let o=ctx.createOscillator();
-  o.frequency.value=600;
-  o.connect(ctx.destination);
+/* 🎵 BACKGROUND MUSIC */
+let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c1c.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.2;
+
+/* 🔊 SOUND EFFECT */
+function playSound(type){
+  let ctx = new (window.AudioContext || window.webkitAudioContext)();
+  let o = ctx.createOscillator();
+  let g = ctx.createGain();
+
+  o.connect(g);
+  g.connect(ctx.destination);
+
+  if(type==="success"){
+    o.frequency.setValueAtTime(500, ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(900, ctx.currentTime+0.2);
+  }
+  else if(type==="fail"){
+    o.frequency.setValueAtTime(300, ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(150, ctx.currentTime+0.2);
+  }
+  else if(type==="start"){
+    o.frequency.setValueAtTime(600, ctx.currentTime);
+    o.frequency.linearRampToValueAtTime(800, ctx.currentTime+0.1);
+  }
+
   o.start();
-  setTimeout(()=>o.stop(),150);
+  setTimeout(()=>o.stop(),200);
 }
 
-/* VOICE */
-function speak(text){
-  let msg=new SpeechSynthesisUtterance(text);
-  msg.lang="ms-MY";
-  speechSynthesis.speak(msg);
-}
+/* INIT QR LINK */
+function init(){
+  let box = new URLSearchParams(window.location.search).get("box");
+  if(box){
+    firstBox = box;
+    sessionStorage.setItem("firstBox", box);
 
-/* VIBRATE */
-function vibrate(ok){
-  if(navigator.vibrate){
-    navigator.vibrate(ok?[100,50,100]:[300]);
+    document.getElementById("result").innerHTML =
+      "✔ Box pertama: <b>"+box+"</b><br>Scan box kedua";
   }
 }
 
-/* PROGRESS */
-function updateBar(){
-  document.getElementById("bar").style.width=
-    stage===1?"50%":"100%";
-}
+/* SCAN FIRST */
+function startFirstScan(){
 
-/* CAMERA UI */
-function showCam(text){
+  playSound("start");
+  bgMusic.play().catch(()=>{});
+
   document.getElementById("reader").style.display="block";
-  document.getElementById("scanText").innerText=text;
-}
-function hideCam(){
-  document.getElementById("reader").style.display="none";
-  document.getElementById("scanText").innerText="";
-}
 
-/* MAIN SCAN (UNCHANGED STYLE) */
-function scan(){
-
-  showCam(stage===1?"Scan BOX PERTAMA":"Scan BOX KEDUA");
-
-  let scanner=new Html5Qrcode("reader");
+  let scanner = new Html5Qrcode("reader");
 
   scanner.start(
-    {facingMode:"environment"},
-    {fps:10,qrbox:250},
+    { facingMode:"environment" },
+    { fps:10, qrbox:250 },
     (text)=>{
 
-      let box=text.includes("box=")
-        ?text.split("box=")[1]
-        :text;
+      firstBox = text.includes("box=")
+        ? text.split("box=")[1]
+        : text;
+
+      sessionStorage.setItem("firstBox", firstBox);
 
       scanner.stop();
-      hideCam();
 
-      if(stage===1){
-        firstBox=box;
-        stage=2;
-        updateBar();
+      document.getElementById("result").innerHTML =
+        "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
+    }
+  );
+}
 
-        document.getElementById("result").innerHTML=
-          "✔ Box pertama: <b>"+box+"</b><br>Scan box kedua";
+/* SCAN SECOND */
+function startSecondScan(){
 
-        speak("Box pertama berjaya");
+  if(!firstBox){
+    alert("Scan box pertama dulu!");
+    return;
+  }
 
-        setTimeout(scan,800); // auto next
-      }else{
-        check(box);
-      }
+  document.getElementById("reader").style.display="block";
+
+  let scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode:"environment" },
+    { fps:10, qrbox:250 },
+    (text)=>{
+
+      let secondBox = text.includes("box=")
+        ? text.split("box=")[1]
+        : text;
+
+      scanner.stop();
+
+      check(secondBox);
     }
   );
 }
 
 /* RESULT */
-function check(second){
+function check(secondBox){
 
-  let ok=(firstBox===second);
+  let ok = (firstBox === secondBox);
 
-  vibrate(ok);
+  setTimeout(()=>{
+    playSound(ok?"success":"fail");
+  },100);
 
   if(ok){
+    document.getElementById("icon").innerHTML="✔";
+    document.getElementById("icon").style.color="#22c55e";
+
     document.getElementById("lock").innerText="🔓";
-    document.getElementById("door").classList.add("open","glow");
+    document.getElementById("door").classList.add("open");
 
-    document.getElementById("result").innerHTML=
+    document.getElementById("result").innerHTML =
       "<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
-
-    speak("Tahniah anda betul");
   }else{
-    document.getElementById("result").innerHTML=
+    document.getElementById("icon").innerHTML="✖";
+    document.getElementById("icon").style.color="#ef4444";
+
+    document.getElementById("result").innerHTML =
       "<div class='bad'>SALAH, SILA CUBA LAGI</div>";
-
-    speak("Salah, sila cuba lagi");
   }
+
+  document.getElementById("backBtn").style.display="inline-block";
+
+  sessionStorage.removeItem("firstBox");
 }
 
-/* START */
-function startGame(){
-  document.getElementById("startBtn").style.display="none";
-
-  playStartSound();
-  speak("Permainan bermula");
-
-  updateBar();
-  scan();
+/* RESET */
+function resetGame(){
+  bgMusic.pause();
+  bgMusic.currentTime = 0;
+  sessionStorage.clear();
+  location.href = location.pathname;
 }
+
+init();
 
 </script>
 
