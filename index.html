@@ -91,18 +91,42 @@ button{
 let firstBox=null;
 let audioCtx=null;
 
-/* AUDIO INIT */
+/* ================= AUDIO ================= */
+
 function initAudio(){
   if(!audioCtx){
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   }
 }
 
-/* BEEP */
-function beep(ok){
+/* COIN SOUND */
+function coinSound(){
   if(!audioCtx) return;
   let o=audioCtx.createOscillator();
-  o.frequency.value=ok?800:200;
+  o.frequency.setValueAtTime(700,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(1200,audioCtx.currentTime+0.1);
+  o.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),120);
+}
+
+/* FAIL SOUND */
+function failSound(){
+  if(!audioCtx) return;
+  let o=audioCtx.createOscillator();
+  o.frequency.setValueAtTime(300,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(150,audioCtx.currentTime+0.2);
+  o.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
+}
+
+/* JUMP SOUND (START) */
+function jumpSound(){
+  if(!audioCtx) return;
+  let o=audioCtx.createOscillator();
+  o.frequency.setValueAtTime(400,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(800,audioCtx.currentTime+0.15);
   o.connect(audioCtx.destination);
   o.start();
   setTimeout(()=>o.stop(),150);
@@ -115,10 +139,22 @@ function speak(text){
   speechSynthesis.speak(msg);
 }
 
-/* 🎵 BACKGROUND MUSIC */
-let bgMusic=new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c1c.mp3");
+/* 🎵 BACKGROUND MUSIC (FADE IN) */
+let bgMusic=new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
 bgMusic.loop=true;
-bgMusic.volume=0.15;
+bgMusic.volume=0;
+
+function fadeInMusic(){
+  let vol=0;
+  let fade=setInterval(()=>{
+    if(vol<0.15){
+      vol+=0.01;
+      bgMusic.volume=vol;
+    }else{
+      clearInterval(fade);
+    }
+  },200);
+}
 
 /* PROGRESS */
 function setProgress(step){
@@ -126,11 +162,15 @@ function setProgress(step){
     step===1?"50%":"100%";
 }
 
-/* SCAN FIRST */
+/* ================= SCAN FIRST ================= */
+
 function startFirstScan(){
 
   initAudio();
+  jumpSound();
+
   bgMusic.play().catch(()=>{});
+  fadeInMusic();
 
   document.getElementById("reader").style.display="block";
 
@@ -147,18 +187,20 @@ function startFirstScan(){
 
       scanner.stop();
 
+      coinSound(); // 🎵 coin bila scan pertama
+
       setProgress(1);
 
       document.getElementById("result").innerHTML=
         "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
 
-      // unlock second button
       document.getElementById("btn2").disabled=false;
     }
   );
 }
 
-/* SCAN SECOND */
+/* ================= SCAN SECOND ================= */
+
 function startSecondScan(){
 
   if(!firstBox){
@@ -188,14 +230,15 @@ function startSecondScan(){
   );
 }
 
-/* RESULT */
+/* ================= RESULT ================= */
+
 function check(secondBox){
 
   let ok=(firstBox===secondBox);
 
-  beep(ok);
-
   if(ok){
+    coinSound();
+
     document.getElementById("icon").innerHTML="✔";
     document.getElementById("icon").style.color="#22c55e";
 
@@ -206,23 +249,24 @@ function check(secondBox){
 
     speak("Tahniah anda betul");
   }else{
+    failSound();
+
     document.getElementById("icon").innerHTML="✖";
     document.getElementById("icon").style.color="#ef4444";
 
     document.getElementById("result").innerHTML=
       "<div class='bad'>SALAH SILA CUBA LAGI</div>";
 
-    speak("Salah, sila cuba lagi");
+    speak("Salah sila cuba lagi");
   }
 
   document.getElementById("btn1").style.display="none";
   document.getElementById("btn2").style.display="none";
   document.getElementById("backBtn").style.display="inline-block";
-
-  sessionStorage.removeItem("firstBox");
 }
 
-/* RESET */
+/* ================= RESET ================= */
+
 function resetGame(){
   bgMusic.pause();
   bgMusic.currentTime=0;
