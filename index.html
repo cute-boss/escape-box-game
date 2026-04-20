@@ -27,14 +27,7 @@ body{
 }
 
 #lock{font-size:65px;}
-
-#icon{
-  font-size:90px;
-  margin:15px 0;
-}
-
-.good{color:#22c55e;font-size:24px;}
-.bad{color:#ef4444;font-size:24px;}
+#icon{font-size:90px;margin:10px;}
 
 button{
   margin-top:10px;
@@ -43,12 +36,30 @@ button{
   border-radius:10px;
 }
 
+/* PROGRESS */
+.progress{
+  width:80%;
+  height:10px;
+  background:#334155;
+  margin:15px auto;
+  border-radius:10px;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background:#22c55e;
+  transition:0.4s;
+}
+
 /* CAMERA */
 #reader{
   width:100%;
   display:none;
   margin-top:15px;
 }
+
+.good{color:#22c55e;font-size:24px;}
+.bad{color:#ef4444;font-size:24px;}
 </style>
 </head>
 
@@ -59,13 +70,16 @@ button{
 <h2>🔐 Escape Box Game</h2>
 
 <div id="lock">🔒</div>
-
 <div id="icon"></div>
+
+<div class="progress">
+  <div class="bar" id="bar"></div>
+</div>
 
 <div id="result">Imbas kod untuk mula permainan</div>
 
-<button id="btn1" onclick="startFirstScan()">📷 SCAN BOX PERTAMA</button>
-<button id="btn2" onclick="startSecondScan()">📷 SCAN BOX KEDUA</button>
+<button id="btn1" onclick="startFirstScan()">📷 Scan Box Pertama</button>
+<button id="btn2" onclick="startSecondScan()" disabled>📷 Scan Box Kedua</button>
 <button id="backBtn" onclick="resetGame()" style="display:none;">🔁 KEMBALI</button>
 
 <div id="reader"></div>
@@ -74,70 +88,77 @@ button{
 
 <script>
 
-let firstBox = null;
+let firstBox=null;
+let audioCtx=null;
 
-/* ================= AUDIO (SAFE VERSION) ================= */
-
-let audioCtx = null;
-
+/* AUDIO INIT */
 function initAudio(){
   if(!audioCtx){
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   }
 }
 
+/* BEEP */
 function beep(ok){
   if(!audioCtx) return;
-
-  let o = audioCtx.createOscillator();
-  o.frequency.value = ok ? 800 : 200;
+  let o=audioCtx.createOscillator();
+  o.frequency.value=ok?800:200;
   o.connect(audioCtx.destination);
   o.start();
   setTimeout(()=>o.stop(),150);
 }
 
+/* VOICE */
 function speak(text){
-  let msg = new SpeechSynthesisUtterance(text);
-  msg.lang = "ms-MY";
+  let msg=new SpeechSynthesisUtterance(text);
+  msg.lang="ms-MY";
   speechSynthesis.speak(msg);
 }
 
-let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c1c.mp3");
-bgMusic.loop = true;
-bgMusic.volume = 0.2;
+/* 🎵 BACKGROUND MUSIC */
+let bgMusic=new Audio("https://cdn.pixabay.com/audio/2022/03/15/audio_115b9b3c1c.mp3");
+bgMusic.loop=true;
+bgMusic.volume=0.15;
 
-/* ================= SCAN FIRST ================= */
+/* PROGRESS */
+function setProgress(step){
+  document.getElementById("bar").style.width=
+    step===1?"50%":"100%";
+}
 
+/* SCAN FIRST */
 function startFirstScan(){
 
-  initAudio(); // unlock audio
+  initAudio();
   bgMusic.play().catch(()=>{});
 
   document.getElementById("reader").style.display="block";
 
-  let scanner = new Html5Qrcode("reader");
+  let scanner=new Html5Qrcode("reader");
 
   scanner.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
+    {facingMode:"environment"},
+    {fps:10,qrbox:250},
     (text)=>{
 
-      firstBox = text.includes("box=")
-        ? text.split("box=")[1]
-        : text;
-
-      sessionStorage.setItem("firstBox", firstBox);
+      firstBox=text.includes("box=")
+        ?text.split("box=")[1]
+        :text;
 
       scanner.stop();
 
-      document.getElementById("result").innerHTML =
+      setProgress(1);
+
+      document.getElementById("result").innerHTML=
         "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
+
+      // unlock second button
+      document.getElementById("btn2").disabled=false;
     }
   );
 }
 
-/* ================= SCAN SECOND ================= */
-
+/* SCAN SECOND */
 function startSecondScan(){
 
   if(!firstBox){
@@ -147,29 +168,30 @@ function startSecondScan(){
 
   document.getElementById("reader").style.display="block";
 
-  let scanner = new Html5Qrcode("reader");
+  let scanner=new Html5Qrcode("reader");
 
   scanner.start(
-    { facingMode:"environment" },
-    { fps:10, qrbox:250 },
+    {facingMode:"environment"},
+    {fps:10,qrbox:250},
     (text)=>{
 
-      let secondBox = text.includes("box=")
-        ? text.split("box=")[1]
-        : text;
+      let secondBox=text.includes("box=")
+        ?text.split("box=")[1]
+        :text;
 
       scanner.stop();
+
+      setProgress(2);
 
       check(secondBox);
     }
   );
 }
 
-/* ================= RESULT ================= */
-
+/* RESULT */
 function check(secondBox){
 
-  let ok = (firstBox === secondBox);
+  let ok=(firstBox===secondBox);
 
   beep(ok);
 
@@ -179,7 +201,7 @@ function check(secondBox){
 
     document.getElementById("lock").innerText="🔓";
 
-    document.getElementById("result").innerHTML =
+    document.getElementById("result").innerHTML=
       "<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
 
     speak("Tahniah anda betul");
@@ -187,29 +209,24 @@ function check(secondBox){
     document.getElementById("icon").innerHTML="✖";
     document.getElementById("icon").style.color="#ef4444";
 
-    document.getElementById("result").innerHTML =
+    document.getElementById("result").innerHTML=
       "<div class='bad'>SALAH SILA CUBA LAGI</div>";
 
     speak("Salah, sila cuba lagi");
   }
 
-  // hide buttons
   document.getElementById("btn1").style.display="none";
   document.getElementById("btn2").style.display="none";
-
-  // show back
   document.getElementById("backBtn").style.display="inline-block";
 
   sessionStorage.removeItem("firstBox");
 }
 
-/* ================= RESET ================= */
-
+/* RESET */
 function resetGame(){
   bgMusic.pause();
-  bgMusic.currentTime = 0;
-  sessionStorage.clear();
-  location.href = location.pathname;
+  bgMusic.currentTime=0;
+  location.reload();
 }
 
 </script>
