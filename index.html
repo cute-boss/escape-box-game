@@ -16,7 +16,6 @@ body{
   text-align:center;
   padding-top:40px;
 }
-
 .card{
   display:inline-block;
   background:#1e293b;
@@ -25,18 +24,14 @@ body{
   width:90%;
   max-width:380px;
 }
-
 #lock{font-size:65px;}
 #icon{font-size:90px;margin:10px;}
-
 button{
   margin-top:10px;
   padding:10px 15px;
   border:none;
   border-radius:10px;
 }
-
-/* PROGRESS */
 .progress{
   width:80%;
   height:10px;
@@ -50,14 +45,11 @@ button{
   background:#22c55e;
   transition:0.4s;
 }
-
-/* CAMERA */
 #reader{
   width:100%;
   display:none;
   margin-top:15px;
 }
-
 .good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
 </style>
@@ -90,18 +82,25 @@ button{
 
 let firstBox=null;
 let audioCtx=null;
+let bgStarted=false;
 
-/* ================= AUDIO ================= */
+/* ================= AUDIO INIT ================= */
 
 function initAudio(){
   if(!audioCtx){
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
   }
 }
+function resumeAudio(){
+  if(audioCtx && audioCtx.state==="suspended"){
+    audioCtx.resume();
+  }
+}
 
-/* COIN SOUND */
+/* ================= SOUND ================= */
+
 function coinSound(){
-  if(!audioCtx) return;
+  resumeAudio();
   let o=audioCtx.createOscillator();
   o.frequency.setValueAtTime(700,audioCtx.currentTime);
   o.frequency.linearRampToValueAtTime(1200,audioCtx.currentTime+0.1);
@@ -110,9 +109,8 @@ function coinSound(){
   setTimeout(()=>o.stop(),120);
 }
 
-/* FAIL SOUND */
 function failSound(){
-  if(!audioCtx) return;
+  resumeAudio();
   let o=audioCtx.createOscillator();
   o.frequency.setValueAtTime(300,audioCtx.currentTime);
   o.frequency.linearRampToValueAtTime(150,audioCtx.currentTime+0.2);
@@ -121,9 +119,8 @@ function failSound(){
   setTimeout(()=>o.stop(),150);
 }
 
-/* JUMP SOUND (START) */
 function jumpSound(){
-  if(!audioCtx) return;
+  resumeAudio();
   let o=audioCtx.createOscillator();
   o.frequency.setValueAtTime(400,audioCtx.currentTime);
   o.frequency.linearRampToValueAtTime(800,audioCtx.currentTime+0.15);
@@ -132,17 +129,53 @@ function jumpSound(){
   setTimeout(()=>o.stop(),150);
 }
 
-/* VOICE */
+/* ================= VOICE (FEMALE / CHILD) ================= */
+
+let voices=[];
+
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+
+function getBestVoice(){
+  if(!voices.length) voices = speechSynthesis.getVoices();
+
+  // cari suara perempuan / child
+  return voices.find(v =>
+    v.lang.includes("ms") ||
+    v.lang.includes("en") &&
+    (v.name.toLowerCase().includes("female") ||
+     v.name.toLowerCase().includes("girl") ||
+     v.name.toLowerCase().includes("zira") ||
+     v.name.toLowerCase().includes("samantha"))
+  ) || voices[0];
+}
+
 function speak(text){
+  speechSynthesis.cancel();
+
   let msg=new SpeechSynthesisUtterance(text);
-  msg.lang="ms-MY";
+  msg.voice=getBestVoice();
+  msg.rate=1;
+  msg.pitch=1.2; // lebih “budak feel”
+
   speechSynthesis.speak(msg);
 }
 
-/* 🎵 BACKGROUND MUSIC (FADE IN) */
+/* ================= BACKGROUND MUSIC ================= */
+
 let bgMusic=new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
 bgMusic.loop=true;
 bgMusic.volume=0;
+
+function startMusic(){
+  if(!bgStarted){
+    bgStarted=true;
+    bgMusic.play().then(()=>{
+      fadeInMusic();
+    }).catch(()=>{});
+  }
+}
 
 function fadeInMusic(){
   let vol=0;
@@ -156,7 +189,8 @@ function fadeInMusic(){
   },200);
 }
 
-/* PROGRESS */
+/* ================= PROGRESS ================= */
+
 function setProgress(step){
   document.getElementById("bar").style.width=
     step===1?"50%":"100%";
@@ -167,10 +201,9 @@ function setProgress(step){
 function startFirstScan(){
 
   initAudio();
+  resumeAudio();
   jumpSound();
-
-  bgMusic.play().catch(()=>{});
-  fadeInMusic();
+  startMusic();
 
   document.getElementById("reader").style.display="block";
 
@@ -187,7 +220,7 @@ function startFirstScan(){
 
       scanner.stop();
 
-      coinSound(); // 🎵 coin bila scan pertama
+      coinSound();
 
       setProgress(1);
 
@@ -241,13 +274,15 @@ function check(secondBox){
 
     document.getElementById("icon").innerHTML="✔";
     document.getElementById("icon").style.color="#22c55e";
-
     document.getElementById("lock").innerText="🔓";
 
     document.getElementById("result").innerHTML=
       "<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
 
-    speak("Tahniah anda betul");
+    setTimeout(()=>{
+      speak("Tahniah anda betul");
+    },200);
+
   }else{
     failSound();
 
@@ -257,7 +292,9 @@ function check(secondBox){
     document.getElementById("result").innerHTML=
       "<div class='bad'>SALAH SILA CUBA LAGI</div>";
 
-    speak("Salah sila cuba lagi");
+    setTimeout(()=>{
+      speak("Salah sila cuba lagi");
+    },200);
   }
 
   document.getElementById("btn1").style.display="none";
