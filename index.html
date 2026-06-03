@@ -8,7 +8,7 @@
 <script src="https://unpkg.com/html5-qrcode"></script>
 
 <style>
-/* BARU: UI Tema Taman Permainan Ceria & Terang untuk Kanak-Kanak */
+/* UI Tema Taman Permainan Ceria & Terang untuk Kanak-Kanak */
 body{
   margin:0;
   font-family: 'Comic Sans MS', 'Chalkboard SE', Arial, sans-serif;
@@ -24,7 +24,7 @@ body{
   border-radius:30px;
   width:90%;
   max-width:380px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08); /* Bayang lembut supaya nampak timbul */
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
   border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
 }
 h2 {
@@ -35,7 +35,7 @@ h2 {
 #lock{font-size:75px; margin-bottom: 10px;}
 #icon{font-size:90px;margin:10px;}
 
-/* Butang yang lebih bulat dan ceria */
+/* Butang yang bulat dan ceria */
 button{
   margin-top:12px;
   padding: 12px 20px;
@@ -63,9 +63,25 @@ button:active {
   color: #94a3b8;
   box-shadow: none;
 }
+
+/* Style Khusus untuk 3 Butang Menu Selepas Menang */
+.action-buttons-container {
+  display: none; /* Disembunyikan pada awal permainan */
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 15px;
+}
 #backBtn {
-  background: #fbbf24; /* Kuning pisang */
+  background: #fbbf24; /* Kuning */
   color: #1e293b;
+}
+#abcSongBtn {
+  background: #a855f7; /* Ungu */
+  color: white;
+}
+#matchGameBtn {
+  background: #ff7849; /* Oren */
+  color: white;
 }
 
 .progress{
@@ -80,7 +96,7 @@ button:active {
 .bar{
   height:100%;
   width:0%;
-  background: linear-gradient(90deg, #4ade80, #22c55e); /* Hijau cerona */
+  background: linear-gradient(90deg, #4ade80, #22c55e); 
   border-radius:20px;
   transition:0.4s;
 }
@@ -93,7 +109,7 @@ button:active {
   border: 3px dashed #38bdf8;
 }
 
-/* BARU: Ruang Iframe di lokasi kamera */
+/* Ruang Iframe di lokasi kamera */
 #gameAreaContainer {
   width:100%;
   height:280px;
@@ -110,7 +126,7 @@ button:active {
   height:100%;
   border:none;
 }
-/* Butang bantuan jika iframe disekat / blank */
+/* Kotak bantuan sandaran iframe */
 #iframeFallbackBox {
   display: none;
   position: absolute;
@@ -148,7 +164,6 @@ button:active {
 
 <button id="btn1" onclick="startFirstScan()">📷 Scan Box Pertama</button>
 <button id="btn2" onclick="startSecondScan()" disabled>📷 Scan Box Kedua</button>
-<button id="backBtn" onclick="resetGame()" style="display:none;">🔁 MAIN SEMULA</button>
 
 <div id="reader"></div>
 
@@ -156,15 +171,21 @@ button:active {
   <iframe id="gameIframe" src="" allow="autoplay"></iframe>
   
   <div id="iframeFallbackBox">
-    <p style="font-size: 14px; color: #475569; font-weight: bold; margin-bottom: 10px;">Klik butang hijau di bawah untuk teruskan permainan! 👇</p>
-    <button id="fallbackPlayBtn" onclick="" style="background: #22c55e; color: white; padding: 10px 25px;">🎮 Buka Game</button>
+    <p style="font-size: 14px; color: #475569; font-weight: bold; margin-bottom: 10px;">Klik butang di bawah untuk mula belajar! 👇</p>
+    <button id="fallbackPlayBtn" onclick="" style="background: #22c55e; color: white; padding: 10px 25px;">🎥 Play Video Huruf</button>
   </div>
+</div>
+
+<div id="actionButtons" class="action-buttons-container">
+  <button id="abcSongBtn" onclick="openBonusLink('https://www.starfall.com/h/abcs/song/?mg=k')">🎶 Jom Menyanyi ABC!</button>
+  <button id="matchGameBtn" onclick="openBonusLink('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🧩 Game Padanan Huruf</button>
+  <button id="backBtn" onclick="resetGame()">🔄 Main Semula</button>
 </div>
 
 </div>
 
 <div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11,18,32,0.9); z-index:99999;">
-  </div>
+</div>
 
 <script>
 
@@ -246,7 +267,7 @@ function jumpSound(){
   setTimeout(()=>o.stop(),150);
 }
 
-/* ================= VOICE (FEMALE / CHILD) ================= */
+/* ================= VOICE ================= */
 
 let voices=[];
 speechSynthesis.onvoiceschanged = () => {
@@ -322,7 +343,7 @@ function startFirstScan(){
   let scanner = new Html5Qrcode("reader");
   
   scanner.start(
-    { facingMode: { exact: "environment" } }, // Paksa penggunaan kamera belakang
+    { facingMode: { exact: "environment" } },
     {
       fps: 15,
       qrbox: 280,
@@ -427,7 +448,7 @@ function check(secondBox){
       speak("Tahniah anda betul");
     },200);
 
-    // KOD IFRAME LOKASI KAMERA: Memuatkan pautan web terus di ruang kamera asal
+    // Memuatkan iframe video huruf mengikut abjad box pertama
     if(videoLinks[firstBox]){
       loadIframeAtLocation(videoLinks[firstBox]);
     }
@@ -439,12 +460,15 @@ function check(secondBox){
     showFailGif();
   }
 
+  // Sembunyikan butang kamera imbasan asal
   document.getElementById("btn1").style.display="none";
   document.getElementById("btn2").style.display="none";
-  document.getElementById("backBtn").style.display="inline-block";
+  
+  // BARU: Paparkan menu dengan 3 butang pilihan baharu
+  document.getElementById("actionButtons").style.display="flex";
 }
 
-// BARU: Fungsi memuatkan iframe di lokasi kamera dengan pengesan blank screen automatik
+// Fungsi memuatkan iframe di lokasi kamera dengan pengesan khas
 function loadIframeAtLocation(url){
   document.getElementById("reader").style.display = "none"; 
   
@@ -456,12 +480,16 @@ function loadIframeAtLocation(url){
   fallback.style.display = "none";
   container.style.display = "block";
   
-  // Sistem sandaran (Fallback): Starfall mempunyai sekatan ketat iframe.
-  // Selepas 0.5 saat, sediakan siap-siap butang pembuka sekatan jika iframe disekat oleh peranti.
+  // Persediaan sokongan butang manual sekiranya pelayar menyekat muatan iframe luaran
   setTimeout(() => {
     document.getElementById("fallbackPlayBtn").setAttribute("onclick", `window.open('${url}', '_blank')`);
     fallback.style.display = "flex";
   }, 500);
+}
+
+// BARU: Fungsi untuk mengendalikan pembukaan pautan bonus (Lagu & Game)
+function openBonusLink(url) {
+  window.open(url, "_blank");
 }
 
 function showFailGif(){
@@ -470,7 +498,7 @@ function showFailGif(){
       <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6Ym90am9vN21ndm14cmMxZndpOHg0ZzZ5d3B5ZzF0bnd5cmh6ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/E7V3EDm6866fD3wHhS/giphy.gif" style="width:200px; max-width:60%; border-radius:20px; margin-bottom: 10px;">
       <h2 style="font-size: 28px; margin: 10px 0; color: #ef4444;">Alamak! Cuba Lagi 🤭</h2>
       <p style="font-size: 16px; margin-bottom: 20px; color: #475569;">Kotak tidak sama. Sila imbas semula!</p>
-      <button onclick="resetGame()" style="background: #22c55e; color: white; font-size: 18px; font-weight: bold; padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🔁 IMBAZ SEMULA</button>
+      <button onclick="resetGame()" style="background: #22c55e; color: white; font-size: 18px; font-weight: bold; padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); margin-top:0;">🔁 IMBAZ SEMULA</button>
     </div>
   `;
   document.getElementById("videoModal").style.display = "block";
