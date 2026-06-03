@@ -31,6 +31,7 @@ button{
   padding:10px 15px;
   border:none;
   border-radius:10px;
+  cursor: pointer;
 }
 .progress{
   width:80%;
@@ -78,90 +79,44 @@ button{
 
 </div>
 
+<div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999;">
+  <video id="videoPlayer" width="100%" height="100%" controls autoplay></video>
+</div>
+
 <script>
 
 let firstBox=null;
-
 const videoLinks = {
-
-A:"https://www.starfall.com/h/abcs/letter-a/?mg=k",
-
-B:"https://www.starfall.com/h/abcs/letter-b/?mg=k",
-
-C:"https://www.starfall.com/h/abcs/letter-c/?mg=k",
-
-D:"https://www.starfall.com/h/abcs/letter-d/?mg=k",
-
-E:"https://www.starfall.com/h/abcs/letter-e/?mg=k",
-
-F:"https://www.starfall.com/h/abcs/letter-f/?mg=k",
-
-G:"https://www.starfall.com/h/abcs/letter-g/?mg=k",
-
-H:"https://www.starfall.com/h/abcs/letter-h/?mg=k",
-
-I:"https://www.starfall.com/h/abcs/letter-i/?mg=k",
-
-J:"https://www.starfall.com/h/abcs/letter-j/?mg=k",
-
-K:"https://www.starfall.com/h/abcs/letter-k/?mg=k",
-
-L:"https://www.starfall.com/h/abcs/letter-l/?mg=k",
-
-M:"https://www.starfall.com/h/abcs/letter-m/?mg=k",
-
-N:"https://www.starfall.com/h/abcs/letter-n/?mg=k",
-
-O:"https://www.starfall.com/h/abcs/letter-o/?mg=k",
-
-P:"https://www.starfall.com/h/abcs/letter-p/?mg=k",
-
-Q:"https://www.starfall.com/h/abcs/letter-q/?mg=k",
-
-R:"https://www.starfall.com/h/abcs/letter-r/?mg=k",
-
-S:"https://www.starfall.com/h/abcs/letter-s/?mg=k",
-
-T:"https://www.starfall.com/h/abcs/letter-t/?mg=k",
-
-U:"https://www.starfall.com/h/abcs/letter-u/?mg=k",
-
-V:"https://www.starfall.com/h/abcs/letter-v/?mg=k",
-
-W:"https://www.starfall.com/h/abcs/letter-w/?mg=k",
-
-X:"https://www.starfall.com/h/abcs/letter-x/?mg=k",
-
-Y:"https://www.starfall.com/h/abcs/letter-y/?mg=k",
-
-Z:"https://www.starfall.com/h/abcs/letter-z/?mg=k"
-
+  A:"https://www.starfall.com/h/abcs/letter-a/?mg=k",
+  B:"https://www.starfall.com/h/abcs/letter-b/?mg=k",
+  C:"https://www.starfall.com/h/abcs/letter-c/?mg=k",
+  D:"https://www.starfall.com/h/abcs/letter-d/?mg=k",
+  E:"https://www.starfall.com/h/abcs/letter-e/?mg=k",
+  F:"https://www.starfall.com/h/abcs/letter-f/?mg=k",
+  G:"https://www.starfall.com/h/abcs/letter-g/?mg=k",
+  H:"https://www.starfall.com/h/abcs/letter-h/?mg=k",
+  I:"https://www.starfall.com/h/abcs/letter-i/?mg=k",
+  J:"https://www.starfall.com/h/abcs/letter-j/?mg=k",
+  K:"https://www.starfall.com/h/abcs/letter-k/?mg=k",
+  L:"https://www.starfall.com/h/abcs/letter-l/?mg=k",
+  M:"https://www.starfall.com/h/abcs/letter-m/?mg=k",
+  N:"https://www.starfall.com/h/abcs/letter-n/?mg=k",
+  O:"https://www.starfall.com/h/abcs/letter-o/?mg=k",
+  P:"https://www.starfall.com/h/abcs/letter-p/?mg=k",
+  Q:"https://www.starfall.com/h/abcs/letter-q/?mg=k",
+  R:"https://www.starfall.com/h/abcs/letter-r/?mg=k",
+  S:"https://www.starfall.com/h/abcs/letter-s/?mg=k",
+  T:"https://www.starfall.com/h/abcs/letter-t/?mg=k",
+  U:"https://www.starfall.com/h/abcs/letter-u/?mg=k",
+  V:"https://www.starfall.com/h/abcs/letter-v/?mg=k",
+  W:"https://www.starfall.com/h/abcs/letter-w/?mg=k",
+  X:"https://www.starfall.com/h/abcs/letter-x/?mg=k",
+  Y:"https://www.starfall.com/h/abcs/letter-y/?mg=k",
+  Z:"https://www.starfall.com/h/abcs/letter-z/?mg=k"
 };
 
 let audioCtx=null;
 let bgStarted=false;
-
-<div id="videoModal"
-style="
-display:none;
-position:fixed;
-top:0;
-left:0;
-width:100%;
-height:100%;
-background:black;
-z-index:99999;
-">
-
-<video
-id="videoPlayer"
-width="100%"
-height="100%"
-controls
-autoplay>
-</video>
-
-</div>
 
 /* ================= AUDIO INIT ================= */
 
@@ -211,15 +166,12 @@ function jumpSound(){
 /* ================= VOICE (FEMALE / CHILD) ================= */
 
 let voices=[];
-
 speechSynthesis.onvoiceschanged = () => {
   voices = speechSynthesis.getVoices();
 };
 
 function getBestVoice(){
   if(!voices.length) voices = speechSynthesis.getVoices();
-
-  // cari suara perempuan / child
   return voices.find(v =>
     v.lang.includes("ms") ||
     v.lang.includes("en") &&
@@ -236,7 +188,7 @@ function speak(text){
   let msg=new SpeechSynthesisUtterance(text);
   msg.voice=getBestVoice();
   msg.rate=1;
-  msg.pitch=1.2; // lebih “budak feel”
+  msg.pitch=1.2; 
 
   speechSynthesis.speak(msg);
 }
@@ -272,13 +224,12 @@ function fadeInMusic(){
 
 function setProgress(step){
   document.getElementById("bar").style.width=
-    step===1?"50%":"100%";
+    step===1?"50%":"100?";
 }
 
 /* ================= SCAN FIRST ================= */
 
 function startFirstScan(){
-
   initAudio();
   resumeAudio();
   jumpSound();
@@ -287,143 +238,93 @@ function startFirstScan(){
   document.getElementById("reader").style.display="block";
 
   let scanner=new Html5Qrcode("reader");
-
   scanner.start(
     {facingMode:"environment"},
     {fps:10,qrbox:250},
     (text)=>{
-
-      firstBox=text.includes("box=")
-        ?text.split("box=")[1]
-        :text;
-
+      firstBox=text.includes("box=") ? text.split("box=")[1] : text;
       scanner.stop();
-
       coinSound();
-
       setProgress(1);
-
-      document.getElementById("result").innerHTML=
-        "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
-
+      document.getElementById("result").innerHTML= "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
       document.getElementById("btn2").disabled=false;
     }
-  );
+  ).catch(err => {
+      console.error("Camera access failed:", err);
+      alert("Gagal mengakses kamera. Pastikan kebenaran (permission) kamera telah diberikan.");
+  });
 }
 
 /* ================= SCAN SECOND ================= */
 
 function startSecondScan(){
-
   if(!firstBox){
     alert("Scan box pertama dulu!");
     return;
   }
 
   document.getElementById("reader").style.display="block";
-
   let scanner=new Html5Qrcode("reader");
 
   scanner.start(
     {facingMode:"environment"},
     {fps:10,qrbox:250},
     (text)=>{
-
-      let secondBox=text.includes("box=")
-        ?text.split("box=")[1]
-        :text;
-
+      let secondBox=text.includes("box=") ? text.split("box=")[1] : text;
       scanner.stop();
-
       setProgress(2);
-
       check(secondBox);
     }
-  );
+  ).catch(err => {
+      console.error("Camera access failed:", err);
+  });
 }
 
 /* ================= RESULT ================= */
 
 function check(secondBox){
+  let ok = (firstBox === secondBox);
 
-let ok = (firstBox === secondBox);
+  if(ok){
+    coinSound();
+    document.getElementById("icon").innerHTML="✔";
+    document.getElementById("icon").style.color="#22c55e";
+    document.getElementById("lock").innerText="🔓";
+    document.getElementById("result").innerHTML="<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
+    
+    setTimeout(()=>{
+      speak("Tahniah anda betul");
+    },200);
 
-if(ok){
+    if(videoLinks[firstBox]){
+      showVideo(videoLinks[firstBox]);
+    }
+  } else {
+    failSound();
+    setTimeout(()=>{
+      speak("Salah sila cuba lagi");
+    },200);
+    showFailGif();
+  }
 
-coinSound();
-
-document.getElementById("icon").innerHTML="✔";
-document.getElementById("icon").style.color="#22c55e";
-
-document.getElementById("lock").innerText="🔓";
-
-document.getElementById("result").innerHTML=
-"<div class='good'>TAHNIAH ANDA BETUL 🎉</div>";
-
-setTimeout(()=>{
-speak("Tahniah anda betul");
-},200);
-
-if(videoLinks[firstBox]){
-showVideo(videoLinks[firstBox]);
-}
-
-}else{
-
-failSound();
-
-setTimeout(()=>{
-speak("Salah sila cuba lagi");
-},200);
-
-showFailGif();
-
-}
-
-document.getElementById("btn1").style.display="none";
-document.getElementById("btn2").style.display="none";
-document.getElementById("backBtn").style.display="inline-block";
-
+  document.getElementById("btn1").style.display="none";
+  document.getElementById("btn2").style.display="none";
+  document.getElementById("backBtn").style.display="inline-block";
 }
 
 function showVideo(url){
-
-window.open(
-  url,
-  "_blank"
-);
-
+  window.open(url, "_blank");
 }
 
 function showFailGif(){
-
-document.getElementById("videoModal")
-.innerHTML = `
-<div style="
-height:100%;
-display:flex;
-flex-direction:column;
-justify-content:center;
-align-items:center;
-color:white;
-">
-
-<img
-src="https://media.giphy.com/media/3og0IPxMM0erATueVW/giphy.gif"
-style="width:250px;border-radius:20px;">
-
-<h2>Sorry, Try Again</h2>
-
-<button onclick="resetGame()">
-KEMBALI
-</button>
-
-</div>
-`;
-
-document.getElementById("videoModal")
-.style.display = "block";
-
+  document.getElementById("videoModal").innerHTML = `
+    <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
+      <img src="https://media.giphy.com/media/3og0IPxMM0erATueVW/giphy.gif" style="width:250px;border-radius:20px;">
+      <h2>Sorry, Try Again</h2>
+      <button onclick="resetGame()">KEMBALI</button>
+    </div>
+  `;
+  document.getElementById("videoModal").style.display = "block";
 }
 
 /* ================= RESET ================= */
