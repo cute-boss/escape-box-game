@@ -250,11 +250,7 @@ function startFirstScan(){
       videoConstraints: {
         width: { ideal: 1280 },
         height: { ideal: 720 }
-      },
-      // Ciri tambahan untuk memudahkan imbasan kod QR kecil / kawasan gelap
-      showTorchButtonIfSupported: true,
-      showZoomSliderIfSupported: true,
-      defaultZoomValueIfSupported: 1.5
+      }
     },
     (text)=>{
       firstBox = text.includes("box=") ? text.split("box=")[1] : text;
@@ -289,10 +285,7 @@ function startSecondScan(){
       videoConstraints: {
         width: { ideal: 1280 },
         height: { ideal: 720 }
-      },
-      showTorchButtonIfSupported: true,
-      showZoomSliderIfSupported: true,
-      defaultZoomValueIfSupported: 1.5
+      }
     },
     (text)=>{
       let secondBox = text.includes("box=") ? text.split("box=")[1] : text;
