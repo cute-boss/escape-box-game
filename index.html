@@ -241,16 +241,21 @@ function startFirstScan(){
   
   scanner.start(
     { 
-      facingMode: "environment"
+      // PERBAIKAN UTAMA: Menggunakan hantaran objek 'exact' untuk memaksa kamera belakang dibuka
+      facingMode: { exact: "environment" }
     },
     {
       fps: 15,
       qrbox: 280,
-      // Menggunakan resolusi HD supaya tulisan QR kecil lebih jelas & senang dikesan
       videoConstraints: {
+        // Double-check paksaan kamera belakang di dalam tetapan video constraints
+        facingMode: { exact: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 720 }
-      }
+      },
+      showTorchButtonIfSupported: true,
+      showZoomSliderIfSupported: true,
+      defaultZoomValueIfSupported: 1.5
     },
     (text)=>{
       firstBox = text.includes("box=") ? text.split("box=")[1] : text;
@@ -262,8 +267,28 @@ function startFirstScan(){
     }
   ).catch(err => {
       console.error("Camera access failed:", err);
-      alert("Gagal membuka kamera. Sila pastikan kebenaran kamera dibenarkan.");
+      // Jika peranti lama gagal mengesan arahan 'exact', kita berikan fallback automatik ke mod biasa
+      startFirstScanFallback();
   });
+}
+
+// Fungsi gantian sekiranya peranti tidak menyokong sekatan 'exact' secara ketat
+function startFirstScanFallback(){
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } },
+      showTorchButtonIfSupported: true, showZoomSliderIfSupported: true, defaultZoomValueIfSupported: 1.5
+    },
+    (text)=>{
+      firstBox = text.includes("box=") ? text.split("box=")[1] : text;
+      scanner.stop(); coinSound(); setProgress(1);
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Scan box kedua";
+      document.getElementById("btn2").disabled = false;
+    }
+  ).catch(err => alert("Gagal membuka kamera belakang. Sila semak kebenaran akses peranti."));
 }
 
 /* ================= SCAN SECOND ================= */
@@ -278,14 +303,18 @@ function startSecondScan(){
   let scanner = new Html5Qrcode("reader");
 
   scanner.start(
-    { facingMode: "environment" },
+    { facingMode: { exact: "environment" } },
     {
       fps: 15, 
       qrbox: 280,
       videoConstraints: {
+        facingMode: { exact: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 720 }
-      }
+      },
+      showTorchButtonIfSupported: true,
+      showZoomSliderIfSupported: true,
+      defaultZoomValueIfSupported: 1.5
     },
     (text)=>{
       let secondBox = text.includes("box=") ? text.split("box=")[1] : text;
@@ -295,7 +324,24 @@ function startSecondScan(){
     }
   ).catch(err => {
       console.error("Camera access failed:", err);
+      startSecondScanFallback();
   });
+}
+
+function startSecondScanFallback(){
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } },
+      showTorchButtonIfSupported: true, showZoomSliderIfSupported: true, defaultZoomValueIfSupported: 1.5
+    },
+    (text)=>{
+      let secondBox = text.includes("box=") ? text.split("box=")[1] : text;
+      scanner.stop(); setProgress(2); check(secondBox);
+    }
+  ).catch(err => console.error(err));
 }
 
 /* ================= RESULT ================= */
