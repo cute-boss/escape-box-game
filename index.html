@@ -230,50 +230,62 @@ function setProgress(step){
 /* ================= SCAN FIRST ================= */
 
 function startFirstScan(){
-  initAudio();
-  resumeAudio();
-  jumpSound();
-  startMusic();
+  initAudio(); [cite: 16]
+  resumeAudio(); [cite: 16]
+  jumpSound(); [cite: 16]
+  startMusic(); [cite: 16]
 
-  document.getElementById("reader").style.display="block";
+  document.getElementById("reader").style.display="block"; [cite: 16]
 
-  let scanner=new Html5Qrcode("reader");
+  let scanner = new Html5Qrcode("reader"); [cite: 16]
+  
   scanner.start(
-    {facingMode:"environment"},
-    {fps:10,qrbox:250},
+    { facingMode: "environment" }, [cite: 17]
+    {
+      fps: 15,             // Increased from 10 to 15 for smoother scanning
+      qrbox: 280,          // Made the scanning box larger so you don't have to get too close
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true // Uses native hardware acceleration if available
+      }
+    },
     (text)=>{
-      firstBox=text.includes("box=") ? text.split("box=")[1] : text;
-      scanner.stop();
-      coinSound();
-      setProgress(1);
-      document.getElementById("result").innerHTML= "✔ Box pertama: <b>"+firstBox+"</b><br>Scan box kedua";
-      document.getElementById("btn2").disabled=false;
+      firstBox = text.includes("box=") ? text.split("box=")[1] : text; [cite: 17]
+      scanner.stop(); [cite: 17]
+      coinSound(); [cite: 17]
+      setProgress(1); [cite: 17]
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Scan box kedua"; [cite: 17]
+      document.getElementById("btn2").disabled = false; [cite: 17]
     }
   ).catch(err => {
       console.error("Camera access failed:", err);
-      alert("Gagal mengakses kamera. Pastikan kebenaran (permission) kamera telah diberikan.");
   });
 }
 
 /* ================= SCAN SECOND ================= */
 
 function startSecondScan(){
-  if(!firstBox){
-    alert("Scan box pertama dulu!");
-    return;
+  if(!firstBox){ [cite: 18]
+    alert("Scan box pertama dulu!"); [cite: 18]
+    return; [cite: 18]
   }
 
-  document.getElementById("reader").style.display="block";
-  let scanner=new Html5Qrcode("reader");
+  document.getElementById("reader").style.display="block"; [cite: 18]
+  let scanner = new Html5Qrcode("reader"); [cite: 19]
 
   scanner.start(
-    {facingMode:"environment"},
-    {fps:10,qrbox:250},
+    { facingMode: "environment" }, [cite: 19]
+    {
+      fps: 15, 
+      qrbox: 280, 
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
+    },
     (text)=>{
-      let secondBox=text.includes("box=") ? text.split("box=")[1] : text;
-      scanner.stop();
-      setProgress(2);
-      check(secondBox);
+      let secondBox = text.includes("box=") ? text.split("box=")[1] : text; [cite: 19]
+      scanner.stop(); [cite: 19]
+      setProgress(2); [cite: 19]
+      check(secondBox); [cite: 19]
     }
   ).catch(err => {
       console.error("Camera access failed:", err);
@@ -317,14 +329,48 @@ function showVideo(url){
 }
 
 function showFailGif(){
-  document.getElementById("videoModal").innerHTML = `
-    <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; color:white;">
-      <img src="https://media.giphy.com/media/3og0IPxMM0erATueVW/giphy.gif" style="width:250px;border-radius:20px;">
-      <h2>Sorry, Try Again</h2>
-      <button onclick="resetGame()">KEMBALI</button>
-    </div>
-  `;
-  document.getElementById("videoModal").style.display = "block";
+
+document.getElementById("videoModal")
+.innerHTML = `
+<div style="
+height:100%;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+color:white;
+font-family: Arial, sans-serif;
+padding: 20px;
+">
+
+<!-- Cute animated, kid-friendly "Wrong/Try Again" GIF -->
+<img
+src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6Ym90am9vN21ndm14cmMxZndpOHg0ZzZ5d3B5ZzF0bnd5cmh6ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/E7V3EDm6866fD3wHhS/giphy.gif"
+style="width:200px; max-width:60%; border-radius:20px; margin-bottom: 10px;">
+
+<h2 style="font-size: 28px; margin: 10px 0; color: #ef4444;">Alamak! Cuba Lagi 🤭</h2>
+<p style="font-size: 16px; margin-bottom: 20px; color: #cbd5e1;">Kotak tidak sama. Sila imbas semula!</p>
+
+<button onclick="resetGame()" style="
+  background: #22c55e; 
+  color: white; 
+  font-size: 18px; 
+  font-weight: bold; 
+  padding: 12px 30px; 
+  border: none; 
+  border-radius: 50px; 
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+">
+🔁 CUBA LAGI
+</button>
+
+</div>
+`;
+
+document.getElementById("videoModal")
+.style.display = "block";
+
 }
 
 /* ================= RESET ================= */
