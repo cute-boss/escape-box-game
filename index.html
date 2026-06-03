@@ -51,21 +51,22 @@ button{
   display:none;
   margin-top:15px;
 }
-/* Style tambahan untuk kotak video/iframe permainan di lokasi kamera */
-#gameVideoArea{
-  width:100%;
-  height:250px;
-  display:none;
-  margin-top:15px;
-  border-radius:10px;
-  border:2px solid #22c55e;
-  overflow:hidden;
-  background:white;
+/* Style kawasan permainan skrin penuh mesra kanak-kanak */
+#gameFullscreenArea {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0b1220;
+  z-index: 9999;
+  flex-direction: column;
 }
-#gameVideoArea iframe {
-  width:100%;
-  height:100%;
-  border:none;
+#gameFullscreenArea iframe {
+  width: 100%;
+  flex-grow: 1;
+  border: none;
 }
 .good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
@@ -74,7 +75,7 @@ button{
 
 <body>
 
-<div class="card">
+<div id="mainGameCard" class="card">
 
 <h2>🔐 Escape Box Game</h2>
 
@@ -93,8 +94,14 @@ button{
 
 <div id="reader"></div>
 
-<div id="gameVideoArea"></div>
+</div>
 
+<div id="gameFullscreenArea">
+  <div style="background: #1e293b; padding: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
+    <span style="font-weight: bold; font-size: 18px; margin-left: 15px;">🎮 Permainan Bermula!</span>
+    <button onclick="resetGame()" style="background: #ef4444; color: white; font-weight: bold; margin: 0; padding: 8px 20px; border-radius: 20px;">🏠 UTAMA</button>
+  </div>
+  <iframe id="gameFrame" src="" allow="autoplay"></iframe>
 </div>
 
 <div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999;">
@@ -181,7 +188,7 @@ function jumpSound(){
   setTimeout(()=>o.stop(),150);
 }
 
-/* ================= VOICE (FEMALE / CHILD) ================= */
+/* ================= VOICE ================= */
 
 let voices=[];
 speechSynthesis.onvoiceschanged = () => {
@@ -202,12 +209,10 @@ function getBestVoice(){
 
 function speak(text){
   speechSynthesis.cancel();
-
   let msg=new SpeechSynthesisUtterance(text);
   msg.voice=getBestVoice();
   msg.rate=1;
   msg.pitch=1.2; 
-
   speechSynthesis.speak(msg);
 }
 
@@ -253,25 +258,15 @@ function startFirstScan(){
   jumpSound();
   startMusic();
 
-  // Pastikan kawasan video lama disembunyikan jika ada
-  document.getElementById("gameVideoArea").style.display="none";
   document.getElementById("reader").style.display="block";
-
   let scanner = new Html5Qrcode("reader");
   
   scanner.start(
     { facingMode: { exact: "environment" } },
     {
-      fps: 15,
-      qrbox: 280,
-      videoConstraints: {
-        facingMode: { exact: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      showTorchButtonIfSupported: true,
-      showZoomSliderIfSupported: true,
-      defaultZoomValueIfSupported: 1.5
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      showTorchButtonIfSupported: true, showZoomSliderIfSupported: true, defaultZoomValueIfSupported: 1.5
     },
     (text)=>{
       firstBox = text.includes("box=") ? text.split("box=")[1] : text;
@@ -282,7 +277,6 @@ function startFirstScan(){
       document.getElementById("btn2").disabled = false;
     }
   ).catch(err => {
-      console.error("Camera access failed:", err);
       startFirstScanFallback();
   });
 }
@@ -302,7 +296,7 @@ function startFirstScanFallback(){
       document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Scan box kedua";
       document.getElementById("btn2").disabled = false;
     }
-  ).catch(err => alert("Gagal membuka kamera belakang. Sila semak kebenaran akses peranti."));
+  ).catch(err => alert("Gagal membuka kamera belakang."));
 }
 
 /* ================= SCAN SECOND ================= */
@@ -313,23 +307,15 @@ function startSecondScan(){
     return;
   }
 
-  document.getElementById("gameVideoArea").style.display="none";
   document.getElementById("reader").style.display="block";
   let scanner = new Html5Qrcode("reader");
 
   scanner.start(
     { facingMode: { exact: "environment" } },
     {
-      fps: 15, 
-      qrbox: 280,
-      videoConstraints: {
-        facingMode: { exact: "environment" },
-        width: { ideal: 1280 },
-        height: { ideal: 720 }
-      },
-      showTorchButtonIfSupported: true,
-      showZoomSliderIfSupported: true,
-      defaultZoomValueIfSupported: 1.5
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      showTorchButtonIfSupported: true, showZoomSliderIfSupported: true, defaultZoomValueIfSupported: 1.5
     },
     (text)=>{
       let secondBox = text.includes("box=") ? text.split("box=")[1] : text;
@@ -338,7 +324,6 @@ function startSecondScan(){
       check(secondBox);
     }
   ).catch(err => {
-      console.error("Camera access failed:", err);
       startSecondScanFallback();
   });
 }
@@ -375,9 +360,11 @@ function check(secondBox){
       speak("Tahniah anda betul");
     },200);
 
-    // BARU: Jika betul, tutup elemen kamera (#reader) dan gantikan dengan video/game di lokasi yang sama
+    // Jika betul, tunggu 1.5 saat memberikan kepuasan menang kepada anak sebelum paparan penuh dibuka
     if(videoLinks[firstBox]){
-      showVideoAtLocation(videoLinks[firstBox]);
+      setTimeout(() => {
+        launchGameWindow(videoLinks[firstBox]);
+      }, 1500);
     }
   } else {
     failSound();
@@ -392,13 +379,14 @@ function check(secondBox){
   document.getElementById("backBtn").style.display="inline-block";
 }
 
-// BARU: Fungsi untuk memuatkan URL permainan starfall terus di dalam kotak aplikasi
-function showVideoAtLocation(url){
-  document.getElementById("reader").style.display = "none"; // Sembunyikan kamera
+// FUNGSI BARU: Alihkan paparan skrin kepada webview penuh mesra kanak-kanak tanpa sekatan tab/pop-up
+function launchGameWindow(url){
+  document.getElementById("mainGameCard").style.display = "none"; // Sembunyikan kad asal
   
-  let videoArea = document.getElementById("gameVideoArea");
-  videoArea.innerHTML = `<iframe src="${url}" allow="autoplay"></iframe>`;
-  videoArea.style.display = "block"; // Paparkan kawasan permainan
+  let frame = document.getElementById("gameFrame");
+  frame.src = url; 
+  
+  document.getElementById("gameFullscreenArea").style.display = "flex"; // Buka skrin penuh permainan
 }
 
 function showFailGif(){
