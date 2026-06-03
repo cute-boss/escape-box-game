@@ -51,6 +51,22 @@ button{
   display:none;
   margin-top:15px;
 }
+/* Style tambahan untuk kotak video/iframe permainan di lokasi kamera */
+#gameVideoArea{
+  width:100%;
+  height:250px;
+  display:none;
+  margin-top:15px;
+  border-radius:10px;
+  border:2px solid #22c55e;
+  overflow:hidden;
+  background:white;
+}
+#gameVideoArea iframe {
+  width:100%;
+  height:100%;
+  border:none;
+}
 .good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
 </style>
@@ -76,6 +92,8 @@ button{
 <button id="backBtn" onclick="resetGame()" style="display:none;">🔁 KEMBALI</button>
 
 <div id="reader"></div>
+
+<div id="gameVideoArea"></div>
 
 </div>
 
@@ -235,20 +253,18 @@ function startFirstScan(){
   jumpSound();
   startMusic();
 
+  // Pastikan kawasan video lama disembunyikan jika ada
+  document.getElementById("gameVideoArea").style.display="none";
   document.getElementById("reader").style.display="block";
 
   let scanner = new Html5Qrcode("reader");
   
   scanner.start(
-    { 
-      // PERBAIKAN UTAMA: Menggunakan hantaran objek 'exact' untuk memaksa kamera belakang dibuka
-      facingMode: { exact: "environment" }
-    },
+    { facingMode: { exact: "environment" } },
     {
       fps: 15,
       qrbox: 280,
       videoConstraints: {
-        // Double-check paksaan kamera belakang di dalam tetapan video constraints
         facingMode: { exact: "environment" },
         width: { ideal: 1280 },
         height: { ideal: 720 }
@@ -267,12 +283,10 @@ function startFirstScan(){
     }
   ).catch(err => {
       console.error("Camera access failed:", err);
-      // Jika peranti lama gagal mengesan arahan 'exact', kita berikan fallback automatik ke mod biasa
       startFirstScanFallback();
   });
 }
 
-// Fungsi gantian sekiranya peranti tidak menyokong sekatan 'exact' secara ketat
 function startFirstScanFallback(){
   let scanner = new Html5Qrcode("reader");
   scanner.start(
@@ -299,6 +313,7 @@ function startSecondScan(){
     return;
   }
 
+  document.getElementById("gameVideoArea").style.display="none";
   document.getElementById("reader").style.display="block";
   let scanner = new Html5Qrcode("reader");
 
@@ -360,8 +375,9 @@ function check(secondBox){
       speak("Tahniah anda betul");
     },200);
 
+    // BARU: Jika betul, tutup elemen kamera (#reader) dan gantikan dengan video/game di lokasi yang sama
     if(videoLinks[firstBox]){
-      showVideo(videoLinks[firstBox]);
+      showVideoAtLocation(videoLinks[firstBox]);
     }
   } else {
     failSound();
@@ -376,8 +392,13 @@ function check(secondBox){
   document.getElementById("backBtn").style.display="inline-block";
 }
 
-function showVideo(url){
-  window.open(url, "_blank");
+// BARU: Fungsi untuk memuatkan URL permainan starfall terus di dalam kotak aplikasi
+function showVideoAtLocation(url){
+  document.getElementById("reader").style.display = "none"; // Sembunyikan kamera
+  
+  let videoArea = document.getElementById("gameVideoArea");
+  videoArea.innerHTML = `<iframe src="${url}" allow="autoplay"></iframe>`;
+  videoArea.style.display = "block"; // Paparkan kawasan permainan
 }
 
 function showFailGif(){
