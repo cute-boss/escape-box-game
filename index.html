@@ -51,8 +51,9 @@ button{
   display:none;
   margin-top:15px;
 }
-/* Style kawasan permainan skrin penuh mesra kanak-kanak */
-#gameFullscreenArea {
+
+/* ================= STYLE MINI BROWSER BARU ================= */
+#miniBrowserArea {
   display: none;
   position: fixed;
   top: 0;
@@ -63,11 +64,67 @@ button{
   z-index: 9999;
   flex-direction: column;
 }
-#gameFullscreenArea iframe {
+/* Bar Navigasi Atas Mini Browser */
+.browser-navbar {
+  background: #1e293b;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+}
+.browser-navigation-btn {
+  display: flex;
+  gap: 8px;
+}
+.nav-arrow {
+  background: #334155;
+  color: white;
+  padding: 8px 14px;
+  font-weight: bold;
+  font-size: 16px;
+  margin: 0;
+}
+.nav-arrow:active {
+  background: #475569;
+}
+.close-browser-btn {
+  background: #ef4444;
+  color: white;
+  font-weight: bold;
+  margin: 0;
+  padding: 8px 20px;
+  border-radius: 20px;
+}
+/* Kotak Kandungan Web */
+.browser-container {
   width: 100%;
   flex-grow: 1;
+  position: relative;
+  background: white;
+}
+#miniBrowserFrame {
+  width: 100%;
+  height: 100%;
   border: none;
 }
+/* Kotak Amaran jika pautan disekat oleh pembekal web */
+#browserBlockedNotice {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #1e293b;
+  color: white;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
 .good{color:#22c55e;font-size:24px;}
 .bad{color:#ef4444;font-size:24px;}
 </style>
@@ -96,12 +153,25 @@ button{
 
 </div>
 
-<div id="gameFullscreenArea">
-  <div style="background: #1e293b; padding: 10px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 6px rgba(0,0,0,0.3);">
-    <span style="font-weight: bold; font-size: 18px; margin-left: 15px;">🎮 Permainan Bermula!</span>
-    <button onclick="resetGame()" style="background: #ef4444; color: white; font-weight: bold; margin: 0; padding: 8px 20px; border-radius: 20px;">🏠 UTAMA</button>
+<div id="miniBrowserArea">
+  <div class="browser-navbar">
+    <div class="browser-navigation-btn">
+      <button class="nav-arrow" onclick="browserBack()">⬅️ Back</button>
+      <button class="nav-arrow" onclick="browserReload()">🔄 Refresh</button>
+    </div>
+    <span id="browserTitle" style="font-weight: bold; font-size: 14px; color: #cbd5e1; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Loading...</span>
+    <button class="close-browser-btn" onclick="closeMiniBrowser()">🏠 UTAMA</button>
   </div>
-  <iframe id="gameFrame" src="" allow="autoplay"></iframe>
+  
+  <div class="browser-container">
+    <iframe id="miniBrowserFrame" src="" allow="autoplay"></iframe>
+    
+    <div id="browserBlockedNotice">
+      <h3 style="color: #f59e0b;">Laman Web Dilindungi 🛡️</h3>
+      <p style="font-size: 14px; color: #cbd5e1; max-width: 300px; margin-bottom: 20px;">Laman web ini memerlukan tetingkap penuh untuk dibuka dengan selamat supaya semua butang boleh ditekan.</p>
+      <button id="externalLaunchBtn" onclick="" style="background: #22c55e; color: white; font-size: 16px; font-weight: bold; padding: 12px 25px; border-radius: 30px; box-shadow: 0 4px 10px rgba(34,197,94,0.3);">🚀 Buka Permainan</button>
+    </div>
+  </div>
 </div>
 
 <div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:black; z-index:99999;">
@@ -111,6 +181,7 @@ button{
 <script>
 
 let firstBox=null;
+let currentActiveUrl = "";
 const videoLinks = {
   A:"https://www.starfall.com/h/abcs/letter-a/?mg=k",
   B:"https://www.starfall.com/h/abcs/letter-b/?mg=k",
@@ -344,7 +415,7 @@ function startSecondScanFallback(){
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT ================= */
+/* ================= RESULT & BROWSER LAUNCH ================= */
 
 function check(secondBox){
   let ok = (firstBox === secondBox);
@@ -360,10 +431,10 @@ function check(secondBox){
       speak("Tahniah anda betul");
     },200);
 
-    // Jika betul, tunggu 1.5 saat memberikan kepuasan menang kepada anak sebelum paparan penuh dibuka
     if(videoLinks[firstBox]){
+      currentActiveUrl = videoLinks[firstBox];
       setTimeout(() => {
-        launchGameWindow(videoLinks[firstBox]);
+        openMiniBrowser(currentActiveUrl);
       }, 1500);
     }
   } else {
@@ -379,14 +450,50 @@ function check(secondBox){
   document.getElementById("backBtn").style.display="inline-block";
 }
 
-// FUNGSI BARU: Alihkan paparan skrin kepada webview penuh mesra kanak-kanak tanpa sekatan tab/pop-up
-function launchGameWindow(url){
-  document.getElementById("mainGameCard").style.display = "none"; // Sembunyikan kad asal
+/* ================= FUNGSI OPERASI MINI BROWSER ================= */
+
+function openMiniBrowser(url) {
+  document.getElementById("mainGameCard").style.display = "none";
   
-  let frame = document.getElementById("gameFrame");
-  frame.src = url; 
+  // Set nama tapak pada top bar
+  document.getElementById("browserTitle").innerText = url.replace("https://www.", "");
   
-  document.getElementById("gameFullscreenArea").style.display = "flex"; // Buka skrin penuh permainan
+  let frame = document.getElementById("miniBrowserFrame");
+  let noticeBox = document.getElementById("browserBlockedNotice");
+  
+  // Set pautan terus ke iframe mini browser
+  frame.src = url;
+  noticeBox.style.display = "none";
+  document.getElementById("miniBrowserArea").style.display = "flex";
+  
+  // Sistem Pengesan Isu Sekatan: Jika domain mengandungi starfall (yang sah menyekat iframe), aktifkan bantuan mod penuh
+  if(url.toLowerCase().includes("starfall.com")) {
+    setTimeout(() => {
+      document.getElementById("externalLaunchBtn").setAttribute("onclick", `window.open('${url}', '_blank')`);
+      noticeBox.style.display = "flex";
+    }, 300);
+  }
+}
+
+function browserBack() {
+  try {
+    let frame = document.getElementById("miniBrowserFrame");
+    frame.contentWindow.history.back();
+  } catch(e) {
+    // Sekiranya rentas domain (cross-origin) menyekat arahan sajak script, muat semula asal
+    browserReload();
+  }
+}
+
+function browserReload() {
+  let frame = document.getElementById("miniBrowserFrame");
+  if(currentActiveUrl) frame.src = currentActiveUrl;
+}
+
+function closeMiniBrowser() {
+  document.getElementById("miniBrowserArea").style.display = "none";
+  document.getElementById("miniBrowserFrame").src = "";
+  resetGame();
 }
 
 function showFailGif(){
@@ -395,7 +502,7 @@ function showFailGif(){
       <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExbXN6Ym90am9vN21ndm14cmMxZndpOHg0ZzZ5d3B5ZzF0bnd5cmh6ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/E7V3EDm6866fD3wHhS/giphy.gif" style="width:200px; max-width:60%; border-radius:20px; margin-bottom: 10px;">
       <h2 style="font-size: 28px; margin: 10px 0; color: #ef4444;">Alamak! Cuba Lagi 🤭</h2>
       <p style="font-size: 16px; margin-bottom: 20px; color: #cbd5e1;">Kotak tidak sama. Sila imbas semula!</p>
-      <button onclick="resetGame()" style="background: #22c55e; color: white; font-size: 18px; font-weight: bold; padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🔁 CUBA LAGI</button>
+      <button onclick="resetGame()" style="background: #22c55e; color: white; font-size: 18px; font-weight: bold; padding: 12px 30px; border: none; border-radius: 50px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">🔁 KEMBALI</button>
     </div>
   `;
   document.getElementById("videoModal").style.display = "block";
