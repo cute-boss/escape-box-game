@@ -51,14 +51,14 @@
       <div class="video-block" id="blockOne">
         <div class="video-label" id="labelOne">Video</div>
         <div class="video-container">
-          <video id="mainVideo" controls autoplay playsinline loop></video>
+          <video id="mainVideo" controls autoplay playsinline muted loop></video>
         </div>
       </div>
       
       <div class="video-block" id="blockTwo" style="display: none;">
         <div class="video-label" id="labelTwo">Cara Menulis Huruf Kecil</div>
         <div class="video-container">
-          <video id="secondVideo" controls playsinline loop></video>
+          <video id="secondVideo" controls autoplay playsinline muted loop></video>
         </div>
       </div>
     </div>
@@ -102,15 +102,21 @@
       
       secondVideoElement.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
       blockTwo.style.display = "block";
-      secondVideoElement.play().catch(function() { console.log("Autoplay blocked for second video"); });
     }
+
+    // Menguatkan jaminan autoplay berjalan lancar melalui kod skrip tambahan
+    window.onload = function() {
+      videoElement.play().catch(function(e) { console.log("Main video autoplay blocked", e); });
+      if (blockTwo.style.display === "block") {
+        secondVideoElement.play().catch(function(e) { console.log("Second video autoplay blocked", e); });
+      }
+    };
 
     function goBack() {
       let previousPage = sessionStorage.getItem("prevPage");
       if (previousPage && previousPage.includes("match.html")) {
         window.location.href = "match.html?letter=" + letter;
       } else {
-        // Balik ke index.html bersama mengekalkan parameter huruf pilihan terakhir
         window.location.href = "index.html?letter=" + letter;
       }
     }
