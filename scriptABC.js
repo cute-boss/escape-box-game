@@ -31,19 +31,13 @@ const videoLinks = {
 let audioCtx = null;
 let bgStarted = false;
 
-/* ================= AUDIO INIT ================= */
 function initAudio() {
-  if (!audioCtx) {
-    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-  }
+  if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 }
 function resumeAudio() {
-  if (audioCtx && audioCtx.state === "suspended") {
-    audioCtx.resume();
-  }
+  if (audioCtx && audioCtx.state === "suspended") { audioCtx.resume(); }
 }
 
-/* ================= SOUND ================= */
 function coinSound() {
   resumeAudio();
   let o = audioCtx.createOscillator();
@@ -66,15 +60,13 @@ function jumpSound() {
   o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 150);
 }
 
-/* ================= VOICE ================= */
 let voices = [];
 speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
 function getBestVoice() {
   if (!voices.length) voices = speechSynthesis.getVoices();
   return voices.find(v =>
     v.lang.includes("ms") ||
-    v.lang.includes("en") &&
-    (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl"))
+    v.lang.includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl"))
   ) || voices[0];
 }
 function speak(text) {
@@ -85,7 +77,6 @@ function speak(text) {
   speechSynthesis.speak(msg);
 }
 
-/* ================= BACKGROUND MUSIC ================= */
 let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
 bgMusic.loop = true; bgMusic.volume = 0;
 function startMusic() {
@@ -101,12 +92,11 @@ function fadeInMusic() {
   }, 200);
 }
 
-/* ================= PROGRESS ================= */
 function setProgress(step) {
   document.getElementById("bar").style.width = (step === 1) ? "50%" : "100%";
 }
 
-/* ================= SCAN FIRST (SAMA SEPERTI ASAL - TIDAK DISENTUH) ================= */
+/* ================= SCAN FIRST (SAMA SEPERTI ASAL) ================= */
 function startFirstScan() {
   initAudio(); resumeAudio(); jumpSound(); startMusic();
   document.getElementById("gameAreaContainer").style.display = "none";
@@ -142,7 +132,7 @@ function startFirstScanFallback() {
   ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
 }
 
-/* ================= SCAN SECOND (SAMA SEPERTI ASAL - TIDAK DISENTUH) ================= */
+/* ================= SCAN SECOND (SAMA SEPERTI ASAL) ================= */
 function startSecondScan() {
   if (!firstBox) { alert("Scan box pertama dulu!"); return; }
   document.getElementById("gameAreaContainer").style.display = "none";
@@ -174,7 +164,7 @@ function startSecondScanFallback() {
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT & CHECK (DIKEMAS KINI SAHAJA) ================= */
+/* ================= RESULT & CHECK ================= */
 function check(secondBox) {
   let ok = (firstBox === secondBox);
   document.getElementById("btn1").style.display = "none";
@@ -187,10 +177,7 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='good'>TAHNIAH ANDA BETUL! 🥳</div>";
     setTimeout(() => { speak("Tahniah anda betul"); }, 200);
 
-    // Buka pautan luaran Starfall dalam tetingkap baharu jika menang
-    if (videoLinks[firstBox]) {
-      window.open(videoLinks[firstBox], "_blank");
-    }
+    if (videoLinks[firstBox]) { window.open(videoLinks[firstBox], "_blank"); }
     document.getElementById("actionButtons").style.display = "flex";
   } else {
     failSound();
@@ -199,7 +186,6 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
-    /* REFIX: Memberi laluan fail imej flashcard ke elemen img untuk auto-resize */
     let container = document.getElementById("gameAreaContainer");
     let imageEl = document.getElementById("flashcardImg");
     
