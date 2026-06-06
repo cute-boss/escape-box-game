@@ -39,15 +39,24 @@ function startFirstScan() {
   
   html5QrcodeScanner = new Html5Qrcode("reader");
   html5QrcodeScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
+    { 
+      facingMode: "environment" 
+    },
+    { 
+      fps: 10, 
+      qrbox: { width: 250, height: 250 },
+      // Ditambah eksperimental advanced constraints untuk memaksa fungsi fokus telefon aktif
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
+    },
     (decodedText) => {
       firstBox = decodedText.trim().toUpperCase();
       
       document.getElementById("btn1").disabled = true;
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
       document.getElementById("btn2").disabled = false;
-      document.getElementById("bar").style.width = "50%"; // Mengubah progress bar ke 50%
+      document.getElementById("bar").style.width = "50%";
       document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
       
       html5QrcodeScanner.stop().then(() => {
@@ -63,19 +72,26 @@ function startSecondScan() {
   
   html5QrcodeScanner = new Html5Qrcode("reader");
   html5QrcodeScanner.start(
-    { facingMode: "environment" },
-    { fps: 10, qrbox: { width: 250, height: 250 } },
+    { 
+      facingMode: "environment" 
+    },
+    { 
+      fps: 10, 
+      qrbox: { width: 250, height: 250 },
+      experimentalFeatures: {
+        useBarCodeDetectorIfSupported: true
+      }
+    },
     (decodedText) => {
       let secondBox = decodedText.trim().toUpperCase();
       
       document.getElementById("btn2").disabled = true;
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%"; // Mengubah progress bar ke 100%
+      document.getElementById("bar").style.width = "100%";
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
         
-        // Simpan data imbasan ke sessionStorage (Ralat tanda sengkang dibersihkan di sini)
         sessionStorage.setItem("lastFirstBox", firstBox);
         sessionStorage.setItem("lastSecondBox", secondBox);
         sessionStorage.setItem("hasScanned", "true");
