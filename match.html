@@ -3,14 +3,35 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Padanan Huruf - Escape Box Game</title>
-  
-  <link rel="stylesheet" href="matchABC.css">
+  <title>Pilih Game</title>
+  <link rel="stylesheet" href="styleABC.css">
+  <style>
+    h2 { color: #0284c7; font-size: 26px; margin: 5px 0 20px 0; }
+    .game-menu-container { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; }
+    
+    /* Warna butang pelangi ceria untuk pilihan game */
+    .btn-g1 { background: #38bdf8; color: white; }
+    .btn-g2 { background: #f43f5e; color: white; }
+    .btn-g3 { background: #a855f7; color: white; }
+    .btn-g4 { background: #34d399; color: white; }
+    .btn-g5 { background: #fbbf24; color: #1e293b; }
+    
+    .navigation-divider {
+      margin-top: 25px;
+      border-top: 2px dashed #e2e8f0;
+      padding-top: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .btn-back { background: #64748b; color: white; }
+    .btn-reset-home { background: #0284c7; color: white; }
+  </style>
 </head>
 <body>
 
   <div class="card">
-    <div class="logo-square-box">
+    <div class="logo-large-box">
       <img src="ABC LOGO.png" alt="ABC Logo" class="app-logo">
     </div>
 
@@ -31,19 +52,17 @@
   </div>
 
   <script>
-    function launchGame(url) {
-      window.open(url, "_blank");
-    }
+    const urlParams = new URLSearchParams(window.location.search);
+    let letter = urlParams.get('letter') || '';
+
+    function launchGame(url) { window.open(url, "_blank"); }
+    
     function goBackHistory() {
-      if(document.referrer.includes("index.html")) {
-        window.history.back();
-      } else {
-        window.location.href = "index.html";
-      }
+      if (letter) window.location.href = "index.html?letter=" + letter;
+      else window.location.href = "index.html";
     }
-    function goHome() {
-      window.location.href = "index.html";
-    }
+    
+    function goHome() { window.location.href = "index.html"; }
   </script>
 </body>
 </html>
