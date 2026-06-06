@@ -6,7 +6,6 @@
   <title>Pemain Video</title>
   <link rel="stylesheet" href="styleABC.css">
   <style>
-    /* Reka bentuk kotak video yang fleksibel */
     .video-section-container {
       display: flex;
       flex-direction: column;
@@ -81,42 +80,31 @@
     let labelOne = document.getElementById("labelOne");
 
     if (type === 'song') {
-      // Jika dipanggil dari butang "Play ABC Song"
       titleElement.innerText = "🎶 Lagu ABC";
       titleElement.style.color = "#a855f7";
       labelOne.innerText = "Lagu ABC";
       videoElement.src = "ABC SONG.mp4";
       blockTwo.style.display = "none";
     } else {
-      // Jika dipanggil dari butang "Cara Menulis" (Papar 2 Video)
       titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + ")";
       titleElement.style.color = "#06b6d4";
       
-      // Tetapan Video Huruf Besar
       labelOne.innerText = "Cara Menulis Huruf Besar (" + letter.toUpperCase() + ")";
       videoElement.src = "CARA MENULIS HURUF/" + letter.toUpperCase() + ".mp4";
       
-      // Tetapan Video Huruf Kecil (Menggunakan format nama fail huruf_ .mp4)
       labelOne.nextElementSibling.children[0].id = "mainVideo"; 
       secondVideoElement.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
       
-      // Paparkan kotak video kedua
       blockTwo.style.display = "block";
-      
-      // Jalankan video kedua secara automatik bersama video pertama jika mahu
       secondVideoElement.play().catch(function() { console.log("Autoplay blocked for second video"); });
     }
 
-    // Dibetulkan sepenuhnya untuk bertindak sama seperti anak panah belakang browser
-    // Ditambah baik untuk sokongan penuh Android & iOS tanpa ralat 'first page'
+    // PENYELASAIAN UTAMU KEMBALI (iOS & Android Pintar)
     function goBack() {
-      // Semak jika pelayar web mempunyai dokumen rujukan sebelum ini (referrer)
-      if (document.referrer && document.referrer.includes("match.html")) {
+      let previousPage = sessionStorage.getItem("prevPage");
+      if (previousPage && previousPage.includes("match.html")) {
         window.location.href = "match.html?letter=" + letter;
-      } else if (document.referrer && document.referrer.includes("index_2.html")) {
-        window.location.href = "index_2.html";
       } else {
-        // Laluan selamat: Jika datang dari halaman utama scan (index.html)
         window.location.href = "index.html";
       }
     }
