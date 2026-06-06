@@ -35,7 +35,7 @@ bgMusic.volume = 0.2;
 
 function startFirstScan() {
   if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
-  bgMusic.play().catch(e => console.log("Muzik disekat", e));
+  bgMusic.play().catch(e => console.log("Muzik latar disekat pelayar", e));
   
   html5QrcodeScanner = new Html5Qrcode("reader");
   html5QrcodeScanner.start(
@@ -43,7 +43,6 @@ function startFirstScan() {
     { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       firstBox = decodedText.trim().toUpperCase();
-      sessionStorage.setItem("lastFirstBox", firstBox);
       
       document.getElementById("btn1").disabled = true;
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
@@ -68,8 +67,6 @@ function startSecondScan() {
     { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       let secondBox = decodedText.trim().toUpperCase();
-      sessionStorage.setItem("lastSecondBox", secondBox);
-      sessionStorage.setItem("hasScanned", "true");
       
       document.getElementById("btn2").disabled = true;
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
@@ -121,7 +118,6 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // Tetapan fungsi klik untuk butang sukses tanpa mengacau warna kelas
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan tidak ditemui!"); }
@@ -168,22 +164,5 @@ function goToPlayABC() {
 
 function resetGame() { 
   bgMusic.pause(); 
-  sessionStorage.removeItem("lastFirstBox");
-  sessionStorage.removeItem("lastSecondBox");
-  sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html"; 
 }
-
-window.onload = function() {
-  let hasScanned = sessionStorage.getItem("hasScanned");
-  if (hasScanned === "true") {
-    firstBox = sessionStorage.getItem("lastFirstBox");
-    let secondBox = sessionStorage.getItem("lastSecondBox");
-    if (firstBox) {
-      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%";
-      semakKeputusan(firstBox, secondBox);
-    }
-  }
-};
