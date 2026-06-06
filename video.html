@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Video Player</title>
+  <title>Pemain Video</title>
   <link rel="stylesheet" href="styleABC.css">
   <style>
     .video-container {
@@ -42,7 +42,6 @@
     let titleElement = document.getElementById("videoTitle");
     let videoElement = document.getElementById("mainVideo");
 
-    // Tetapkan fail video mengikut jenis butang yang ditekan oleh pengguna
     if (type === 'song') {
       titleElement.innerText = "🎶 Lagu ABC";
       titleElement.style.color = "#a855f7";
@@ -53,7 +52,6 @@
       videoElement.src = "CARA MENULIS HURUF/" + letter.toUpperCase() + ".mp4";
     }
 
-    // Fungsi Kembali ke halaman utama dengan membawa memori huruf box
     function goBack() {
       window.location.href = "index.html?letter=" + letter;
     }
