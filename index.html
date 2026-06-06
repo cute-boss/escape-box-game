@@ -31,7 +31,7 @@
       <img id="flashcardImg" src="" alt="Flashcard View">
     </div>
 
-    <div id="actionButtons" class="action-buttons-container">
+    <div id="actionButtons" class="action-buttons-container" style="display: none;">
       <button class="btn-video" id="successVideoBtn">🎥 Video Huruf</button>
       <button class="btn-song" id="successWriteBtn">✍ Cara Menulis</button>
       <button class="btn-match" onclick="goToPlayABC()">🎶 Play ABC Song</button>
@@ -39,7 +39,7 @@
       <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
 
-    <div id="failButtons" class="fail-buttons-container">
+    <div id="failButtons" class="fail-buttons-container" style="display: none;">
       <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
       <button class="btn-song" onclick="goToPlayABC()">🎶 Play ABC</button>
       <button class="btn-match" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
