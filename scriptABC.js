@@ -34,48 +34,76 @@ bgMusic.loop = true;
 bgMusic.volume = 0.2;
 
 function startFirstScan() {
-  if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+  if(html5QrcodeScanner) { 
+    html5QrcodeScanner.clear().catch(err => console.log("Ralat clear:", err)); 
+  }
   bgMusic.play().catch(e => console.log("Muzik latar disekat pelayar", e));
   
-  // Menggunakan fungsi asal anda sepenuhnya (Jaminan tidak kabur)
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    firstBox = decodedText.trim().toUpperCase();
-    
-    document.getElementById("btn1").disabled = true;
-    document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-    document.getElementById("btn2").disabled = false;
-    document.getElementById("bar").style.width = "50%"; // Progress bar asal anda
-    document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
-    
-    html5QrcodeScanner.clear().then(() => {
-      document.getElementById("reader").innerHTML = "";
-    });
-  }, (errorMessage) => {});
+  // Menggunakan Html5Qrcode secara terus (Direct Mode) tanpa hiasan UI yang mengacau sistem
+  html5QrcodeScanner = new Html5Qrcode("reader");
+  
+  html5QrcodeScanner.start(
+    { facingMode: "environment" }, // Memaksa penggunaan kamera belakang utama (autofokus tajam)
+    { 
+      fps: 15,                     // Meningkatkan kadar bingkai gambar supaya imbasan lebih responsif
+      qrbox: { width: 250, height: 250 } 
+    },
+    (decodedText) => {
+      firstBox = decodedText.trim().toUpperCase();
+      
+      document.getElementById("btn1").disabled = true;
+      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+      document.getElementById("btn2").disabled = false;
+      document.getElementById("bar").style.width = "50%";
+      document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
+      
+      html5QrcodeScanner.stop().then(() => {
+        document.getElementById("reader").innerHTML = "";
+      }).catch(err => console.log("Gagal menghentikan kamera:", err));
+    },
+    (errorMessage) => {
+      // Mengabaikan ralat semasa mencari kod QR untuk mengelakkan sangkut (freeze)
+    }
+  ).catch(err => {
+    console.log("Ralat memulakan kamera:", err);
+    alert("Gagal mengakses kamera. Sila pastikan kebenaran (Permission) kamera telah dibenarkan pada pelayar web anda.");
+  });
 }
 
 function startSecondScan() {
-  if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+  if(html5QrcodeScanner) { 
+    html5QrcodeScanner.clear().catch(err => console.log("Ralat clear:", err)); 
+  }
   
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    let secondBox = decodedText.trim().toUpperCase();
-    
-    document.getElementById("btn2").disabled = true;
-    document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-    document.getElementById("bar").style.width = "100%"; // Progress bar asal anda
-    
-    html5QrcodeScanner.clear().then(() => {
-      document.getElementById("reader").innerHTML = "";
+  html5QrcodeScanner = new Html5Qrcode("reader");
+  
+  html5QrcodeScanner.start(
+    { facingMode: "environment" },
+    { 
+      fps: 15, 
+      qrbox: { width: 250, height: 250 } 
+    },
+    (decodedText) => {
+      let secondBox = decodedText.trim().toUpperCase();
       
-      // MENGEKALKAN CARA KAMERA BERFUNGSI: Simpan data ke memori session
-      sessionStorage.setItem("lastFirstBox", firstBox);
-      sessionStorage.setItem("lastSecondBox", secondBox);
-      sessionStorage.setItem("hasScanned", "true");
+      document.getElementById("btn2").disabled = true;
+      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+      document.getElementById("bar").style.width = "100%";
       
-      semakKeputusan(firstBox, secondBox);
-    });
-  }, (errorMessage) => {});
+      html5QrcodeScanner.stop().then(() => {
+        document.getElementById("reader").innerHTML = "";
+        
+        sessionStorage.setItem("lastFirstBox", firstBox);
+        sessionStorage.setItem("lastSecondBox", secondBox);
+        sessionStorage.setItem("hasScanned", "true");
+        
+        semakKeputusan(firstBox, secondBox);
+      }).catch(err => console.log("Gagal menghentikan kamera:", err));
+    },
+    (errorMessage) => {}
+  ).catch(err => {
+    console.log("Ralat memulakan kamera kedua:", err);
+  });
 }
 
 function successSound() {
