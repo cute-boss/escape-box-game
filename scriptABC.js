@@ -60,14 +60,9 @@ function jumpSound() {
   o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 150);
 }
 
-/* ================= PERBAIKAN ENJIN SUARA (SPEECH) ================= */
 let voices = [];
-function loadVoices() {
-  voices = speechSynthesis.getVoices();
-}
-if (speechSynthesis.onvoiceschanged !== undefined) {
-  speechSynthesis.onvoiceschanged = loadVoices;
-}
+function loadVoices() { voices = speechSynthesis.getVoices(); }
+if (speechSynthesis.onvoiceschanged !== undefined) { speechSynthesis.onvoiceschanged = loadVoices; }
 loadVoices();
 
 function getBestVoice() {
@@ -84,14 +79,8 @@ function speak(text) {
   if (!voices.length) loadVoices();
   let msg = new SpeechSynthesisUtterance(text);
   let selectedVoice = getBestVoice();
-  if (selectedVoice) {
-    msg.voice = selectedVoice;
-    msg.lang = selectedVoice.lang; 
-  } else {
-    msg.lang = "ms-MY";
-  }
-  msg.rate = 0.9;
-  msg.pitch = 1.1;
+  if (selectedVoice) { msg.voice = selectedVoice; msg.lang = selectedVoice.lang; } else { msg.lang = "ms-MY"; }
+  msg.rate = 0.9; msg.pitch = 1.1;
   speechSynthesis.speak(msg);
 }
 
@@ -114,20 +103,14 @@ function setProgress(step) {
   document.getElementById("bar").style.width = (step === 1) ? "50%" : "100%";
 }
 
-/* ================= SCAN FIRST ================= */
 function startFirstScan() {
-  initAudio(); resumeAudio(); jumpSound(); startMusic();
-  speak(""); 
+  initAudio(); resumeAudio(); jumpSound(); startMusic(); speak(""); 
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
-  
   scanner.start(
     { facingMode: { exact: "environment" } },
-    {
-      fps: 15, qrbox: 280,
-      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
+    { fps: 15, qrbox: 280, videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } },
     (text) => {
       firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); coinSound(); setProgress(1);
@@ -151,19 +134,14 @@ function startFirstScanFallback() {
   ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
 }
 
-/* ================= SCAN SECOND ================= */
 function startSecondScan() {
   if (!firstBox) { alert("Scan box pertama dulu!"); return; }
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
-
   scanner.start(
     { facingMode: { exact: "environment" } },
-    {
-      fps: 15, qrbox: 280,
-      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
+    { fps: 15, qrbox: 280, videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } },
     (text) => {
       let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); setProgress(2); check(secondBox);
@@ -183,9 +161,10 @@ function startSecondScanFallback() {
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT CHECK ================= */
-function check(secondBox) {
+function check(secondBox, isRestored = false) {
   let ok = (firstBox === secondBox);
+  
+  // Sorokkan butang scanner utama
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
   document.getElementById("reader").style.display = "none";
@@ -194,13 +173,20 @@ function check(secondBox) {
   let imageEl = document.getElementById("flashcardImg");
   let targetLink = videoLinks[firstBox]; 
 
+  // Simpan keadaan terkini ke sessionStorage supaya butang kembali boleh baca semula
+  sessionStorage.setItem("lastFirstBox", firstBox);
+  sessionStorage.setItem("lastSecondBox", secondBox);
+  sessionStorage.setItem("hasScanned", "true");
+
   if (ok) {
-    coinSound();
+    if (!isRestored) {
+      coinSound();
+      setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
+    }
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
-    
-    setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
+    setProgress(2);
 
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
@@ -215,24 +201,27 @@ function check(secondBox) {
     };
 
     document.getElementById("actionButtons").style.display = "flex";
+    document.getElementById("failButtons").style.display = "none";
 
   } else {
-    failSound();
+    if (!isRestored) {
+      failSound();
+      setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
+    }
     document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
-    
-    setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
+    setProgress(2);
 
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // KEMASKINI: Menghantar jenis video baru 'bonus_song' jika scan gagal
     document.getElementById("failVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
-      window.location.href = "video.html?type=bonus_song";
+      window.location.href = "video.html?type=bonus_song&letter=" + (firstBox || "A");
     };
 
+    document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
   }
 }
@@ -249,4 +238,22 @@ function goToPlayABC() {
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
 }
 
-function resetGame() { bgMusic.pause(); window.location.href = "index.html"; }
+function resetGame() { 
+  bgMusic.pause(); 
+  sessionStorage.removeItem("lastFirstBox");
+  sessionStorage.removeItem("lastSecondBox");
+  sessionStorage.removeItem("hasScanned");
+  window.location.href = "index.html"; 
+}
+
+// SEMAK REKOD LAMA BILA KEMBALI KE INDEX.HTML
+window.onload = function() {
+  let hasScanned = sessionStorage.getItem("hasScanned");
+  if (hasScanned === "true") {
+    firstBox = sessionStorage.getItem("lastFirstBox");
+    let secondBox = sessionStorage.getItem("lastSecondBox");
+    if (firstBox) {
+      check(secondBox, true); // Aktifkan semula rupa bentuk keputusan lepas tanpa ulang bunyi bunyian
+    }
+  }
+};
