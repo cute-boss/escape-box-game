@@ -100,7 +100,6 @@ function setProgress(step) {
 function startFirstScan() {
   initAudio(); resumeAudio(); jumpSound(); startMusic();
   document.getElementById("gameAreaContainer").style.display = "none";
-  document.getElementById("writingVideoArea").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
   
@@ -111,7 +110,7 @@ function startFirstScan() {
       videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
     },
     (text) => {
-      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); coinSound(); setProgress(1);
       document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
       document.getElementById("btn2").disabled = false;
@@ -125,7 +124,7 @@ function startFirstScanFallback() {
     { facingMode: "environment" },
     { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
     (text) => {
-      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); coinSound(); setProgress(1);
       document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
       document.getElementById("btn2").disabled = false;
@@ -137,7 +136,6 @@ function startFirstScanFallback() {
 function startSecondScan() {
   if (!firstBox) { alert("Scan box pertama dulu!"); return; }
   document.getElementById("gameAreaContainer").style.display = "none";
-  document.getElementById("writingVideoArea").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
 
@@ -148,7 +146,7 @@ function startSecondScan() {
       videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
     },
     (text) => {
-      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); setProgress(2); check(secondBox);
     }
   ).catch(err => { startSecondScanFallback(); });
@@ -160,13 +158,13 @@ function startSecondScanFallback() {
     { facingMode: "environment" },
     { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
     (text) => {
-      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
       scanner.stop(); setProgress(2); check(secondBox);
     }
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT CHECK ================= */
+/* ================= FIX BERFUNGSI: RESULT & CHECK ================= */
 function check(secondBox) {
   let ok = (firstBox === secondBox);
   document.getElementById("btn1").style.display = "none";
@@ -181,16 +179,17 @@ function check(secondBox) {
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
     
-    // Sembuhkan teks kejayaan baru
+    // PEMBETULAN: Memastikan teks kejayaan berubah dengan tepat di skrin
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
+    // PEMBETULAN: Bunyi suara mengikut teks baharu
     setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 200);
 
-    // Muat imej flashcard yang sepadan
+    // Paparkan imej flashcard huruf sepadan di bawah teks
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    // Pautan video Starfall dinamik mengikut kod imbasan kotak kedua yang betul
+    // PEMBETULAN MUTAKHIR: Mengikat fungsi klik Video Huruf secara dinamik ke pautan Starfall yang betul
     let targetLink = videoLinks[firstBox]; 
     document.getElementById("successVideoBtn").onclick = function() {
       if (targetLink) {
@@ -200,11 +199,12 @@ function check(secondBox) {
       }
     };
 
-    // Pautan untuk menukar paparan kepada 2 video cara menulis
+    // Butang Cara Menulis
     document.getElementById("successWriteBtn").onclick = function() {
-      showWritingVideos(firstBox);
+      window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
+    // Paparkan menu 5 butang pilihan kejayaan
     document.getElementById("actionButtons").style.display = "flex";
 
   } else {
@@ -214,59 +214,18 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
+    // Paparkan imej flashcard pembetulan
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
     document.getElementById("failVideoBtn").onclick = function() {
-      showWritingVideos(firstBox);
+      window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
     document.getElementById("failButtons").style.display = "flex";
   }
 }
 
-/* ================= FUNGSI PAPARAN 2 VIDEO MENULIS (ATAS/BAWAH) ================= */
-function showWritingVideos(letter) {
-  document.getElementById("gameAreaContainer").style.display = "none";
-  
-  let videoArea = document.getElementById("writingVideoArea");
-  let vCapital = document.getElementById("videoCapital");
-  let vSmall = document.getElementById("videoSmall");
-  
-  document.getElementById("labelCapital").innerText = `Cara Menulis Huruf Besar (${letter})`;
-  document.getElementById("labelSmall").innerText = `Cara Menulis Huruf Kecil (${letter.toLowerCase()})`;
-  
-  // Membaca fail .mp4 (Huruf Besar) dan fail _ .mp4 (Huruf Kecil)
-  vCapital.src = "CARA MENULIS HURUF/" + letter + ".mp4";
-  vSmall.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
-  
-  videoArea.style.display = "flex";
-  vCapital.play().catch(()=>{});
-}
-
-/* ================= OVERLAY POPUP FAIL ABC SONG ================= */
-function playAbcSongVideo() {
-  document.getElementById("gameAreaContainer").style.display = "none";
-  document.getElementById("writingVideoArea").style.display = "none";
-  
-  let modal = document.getElementById("videoModal");
-  modal.innerHTML = `
-    <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; padding: 20px; box-sizing: border-box;">
-      <h3 style="color: #a855f7; font-size: 24px; margin: 0 0 15px 0;">🎶 Lagu ABC</h3>
-      <div style="width: 100%; max-width: 360px; height: 220px; background: #000; border-radius: 15px; overflow: hidden; border: 3px solid #a855f7;">
-        <video src="ABC SONG.mp4" controls autoplay playsinline style="width:100%; height:100%; object-fit:contain;"></video>
-      </div>
-      <button onclick="closeVideoModal()" class="btn-back" style="margin-top: 20px; width: 150px;">⬅ Tutup</button>
-    </div>
-  `;
-  modal.style.display = "block";
-}
-
-function closeVideoModal() {
-  document.getElementById("videoModal").innerHTML = "";
-  document.getElementById("videoModal").style.display = "none";
-  document.getElementById("gameAreaContainer").style.display = "block";
-}
-
 function openBonusLink(url) { window.open(url, "_blank"); }
 function goToPage(page) { window.location.href = firstBox ? page + "?letter=" + firstBox : page; }
+function goToPlayABC() { window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; }
 function resetGame() { bgMusic.pause(); window.location.href = "index.html"; }
