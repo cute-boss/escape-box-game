@@ -19,22 +19,25 @@ body {
   border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
 }
 
-/* Container untuk Logo - Menyamai corak layout elemen permainan */
-.logo-container {
-  width: 100%;
-  margin: 0 auto 15px auto;
-  border-radius: 20px;
-  overflow: hidden;
+/* Kotak Square untuk Logo (Lebih kecil daripada saiz lock 75px) */
+.logo-square-box {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 10px auto;
+  border: 3px solid #fed7aa; /* Padan dengan tona border card */
+  border-radius: 12px;       /* Bentuk petak rounded lembut */
+  background-color: #fff;
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.04);
 }
 
-/* Logo diubah suai saiznya untuk dipadankan secara seimbang */
+/* Saiz Logo di dalam Kotak Petak */
 .app-logo {
-  width: 100%;
-  max-width: 280px; /* Lebar seimbang dengan kotak scan (#reader) */
-  height: auto;
+  width: 85%;
+  height: 85%;
   object-fit: contain;
 }
 
