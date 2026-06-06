@@ -19,11 +19,21 @@ body {
   border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
 }
 
-/* Style untuk Logo Baru */
+/* Container untuk Logo - Menyamai corak layout elemen permainan */
+.logo-container {
+  width: 100%;
+  margin: 0 auto 15px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Logo diubah suai saiznya untuk dipadankan secara seimbang */
 .app-logo {
-  display: block;
-  margin: 0 auto 10px auto;
-  max-width: 120px;
+  width: 100%;
+  max-width: 280px; /* Lebar seimbang dengan kotak scan (#reader) */
   height: auto;
   object-fit: contain;
 }
