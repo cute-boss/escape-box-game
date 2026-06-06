@@ -80,7 +80,6 @@
     let labelOne = document.getElementById("labelOne");
 
     if (type === 'song') {
-      // KEMASKINI: Ditukar laluan ke dalam folder LAGU/
       titleElement.innerText = "🎶 Lagu ABC";
       titleElement.style.color = "#a855f7";
       labelOne.innerText = "Lagu ABC";
@@ -88,11 +87,11 @@
       blockTwo.style.display = "none";
       
     } else if (type === 'bonus_song') {
-      // KEMASKINI BARU: Mainkan lagu bonus jika gagal scan QR
+      // KEMASKINI: Nama fail ditukar kepada ABCs ALPHABET SONG.mp4 (Huruf Besar)
       titleElement.innerText = "🎶 ABCs Alphabet Song";
       titleElement.style.color = "#ec4899";
       labelOne.innerText = "Lagu Belajar Abjad";
-      videoElement.src = "LAGU/ABCs Alphabet Song.mp4";
+      videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
       
     } else {
