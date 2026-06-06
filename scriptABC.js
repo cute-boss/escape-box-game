@@ -242,7 +242,8 @@ function check(secondBox) {
     // Memberi ruang jarak masa agar sebutan suara lancar
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
-    imageEl.src = "FLASHCARD/" + firstBox + ".png";
+    // KEMASKINI: Menukar imej kepada fail ALPHABET LETTERS.png secara tetap jika gagal scan
+    imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
     document.getElementById("failVideoBtn").onclick = function() {
