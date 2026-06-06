@@ -1,11 +1,10 @@
-/* Custom Isolated Stylesheet for Game Selection Dashboard */
 body {
   margin: 0;
   font-family: 'Comic Sans MS', 'Chalkboard SE', Arial, sans-serif;
-  background: linear-gradient(135deg, #e0f2fe, #fae8ff);
+  background: linear-gradient(135deg, #e0f2fe, #fae8ff); 
   color: #1e293b;
   text-align: center;
-  padding-top: 40px;
+  padding-top: 10px;
 }
 
 .card {
@@ -15,19 +14,17 @@ body {
   border-radius: 30px;
   width: 90%;
   max-width: 380px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-  border: 4px solid #fed7aa;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+  border: 4px solid #fed7aa; 
 }
 
-/* Default clean logo square layout wrapper styling rules */
-.logo-square-box {
-  height: 26px;
-  margin: 5px auto 10px auto;
-  background-color: transparent;
+.logo-large-box {
+  width: 100%;
+  height: 210px; 
+  margin: 5px auto 0px auto; 
   display: flex;
   justify-content: center;
   align-items: center;
-  overflow: hidden;
 }
 
 .app-logo {
@@ -36,18 +33,14 @@ body {
   object-fit: contain;
 }
 
-h2 {
-  color: #0284c7;
-  font-size: 26px;
-  margin-top: 5px;
-  margin-bottom: 20px;
+#icon { 
+  font-size: 80px; \n  margin: 0px auto 5px auto; 
 }
 
-.game-menu-container {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 20px 0;
+#result {
+  font-weight: bold; 
+  color: #475569; \n  margin: 0px auto 12px auto; 
+  font-size: 18px;
 }
 
 button {
@@ -58,35 +51,126 @@ button {
   font-weight: bold;
   font-size: 16px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
+  display: block;
+  text-decoration: none;
 }
 
 button:active {
   transform: scale(0.95);
 }
 
-/* Interactive colorful layout design button selections */
-.btn-g1 { background: #38bdf8; color: white; }
-.btn-g2 { background: #f43f5e; color: white; }
-.btn-g3 { background: #a855f7; color: white; }
-.btn-g4 { background: #34d399; color: white; }
-.btn-g5 { background: #fbbf24; color: #1e293b; }
+/* --- WARNA BUTANG INDEX.HTML --- */
+#btn1 {
+  background: #ff5722; /* Jingga Ceria */
+  color: white;
+  width: 100%;
+  margin-bottom: 10px;
+}
 
-.navigation-divider {
-  margin-top: 25px;
-  border-top: 2px dashed #e2e8f0;
-  padding-top: 15px;
-  display: flex;
+#btn2 {
+  background: #4caf50; /* Hijau Epal */
+  color: white;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#btn2:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+#reader {
+  width: 100%;
+  border-radius: 20px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+#gameAreaContainer {
+  display: none;
+  width: 100%;
+  margin: 15px auto 10px auto;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px dashed #cbd5e1;
+  background: #f8fafc;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+#flashcardImg {
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  display: block;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Urus Atur Butang Tindakan */
+.action-buttons-container, .fail-buttons-container {
+  display: none;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
+  width: 100%;
+  margin-top: 10px;
 }
 
-.btn-back { 
-  background: #64748b; 
-  color: white; 
+/* BUTANG APABILA BERJAYA MATCH (SUCCESS) */
+#successVideoBtn {
+  background: #e91e63; /* Merah Jambu (Pink) */
+  color: white;
 }
 
-.btn-reset-home { 
-  background: #0284c7; 
-  color: white; 
+#successWriteBtn {
+  background: #00bcd4; /* Cyan / Biru Langit Muda */
+  color: white;
+}
+
+#successPlayABCBtn {
+  background: #9c27b0; /* Ungu Magis */
+  color: white;
+}
+
+#successMatchBtn {
+  background: #ff9800; /* Amber / Oren Kunyit */
+  color: white;
+}
+
+#successRetryBtn {
+  background: #ffc107; /* Kuning Pisang */
+  color: #1e293b;
+}
+
+/* BUTANG APABILA GAGAL MATCH (FAIL) */
+#failVideoBtn {
+  background: #ec4899; /* Merah Jambu Fuchia */
+  color: white;
+}
+
+#failPlayABCBtn {
+  background: #3f51b5; /* Biru Indigo */
+  color: white;
+}
+
+#failMatchBtn {
+  background: #009688; /* Hijau Teal */
+  color: white;
+}
+
+#failRetryBtn {
+  background: #fbbf24; /* Amber Cerah */
+  color: #1e293b;
+}
+
+/* --- WARNA VIDEO.HTML --- */
+.btn-return-home {
+  background: #ff5722; /* Jingga Ceria */
+  color: white;
+  width: 100%;
+  margin-top: 20px;
 }
