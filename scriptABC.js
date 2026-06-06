@@ -96,7 +96,7 @@ function setProgress(step) {
   document.getElementById("bar").style.width = (step === 1) ? "50%" : "100%";
 }
 
-/* ================= SCAN FIRST (SAMA SEPERTI ASAL) ================= */
+/* ================= SCAN FIRST ================= */
 function startFirstScan() {
   initAudio(); resumeAudio(); jumpSound(); startMusic();
   document.getElementById("gameAreaContainer").style.display = "none";
@@ -132,7 +132,7 @@ function startFirstScanFallback() {
   ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
 }
 
-/* ================= SCAN SECOND (SAMA SEPERTI ASAL) ================= */
+/* ================= SCAN SECOND ================= */
 function startSecondScan() {
   if (!firstBox) { alert("Scan box pertama dulu!"); return; }
   document.getElementById("gameAreaContainer").style.display = "none";
@@ -164,7 +164,7 @@ function startSecondScanFallback() {
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT & CHECK (DIKEMAS KINI) ================= */
+/* ================= FIX BERFUNGSI: RESULT & CHECK ================= */
 function check(secondBox) {
   let ok = (firstBox === secondBox);
   document.getElementById("btn1").style.display = "none";
@@ -179,27 +179,32 @@ function check(secondBox) {
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
     
-    // 1. Tukar teks kejayaan Melayu baharu
+    // PEMBETULAN: Memastikan teks kejayaan berubah dengan tepat di skrin
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
-    // 2. Tukar sebutan bunyi suara Melayu baharu
+    // PEMBETULAN: Bunyi suara mengikut teks baharu
     setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 200);
 
-    // 3. Paparkan imej flashcard yang sepadan di bawah teks
+    // Paparkan imej flashcard huruf sepadan di bawah teks
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    // 4. Konfigurasi fungsi tindakan untuk 5 butang panel kejayaan
-    if (videoLinks[firstBox]) {
-      document.getElementById("successVideoBtn").onclick = function() {
-        window.open(videoLinks[firstBox], "_blank");
-      };
-    }
+    // PEMBETULAN MUTAKHIR: Mengikat fungsi klik Video Huruf secara dinamik ke pautan Starfall yang betul
+    let targetLink = videoLinks[firstBox]; 
+    document.getElementById("successVideoBtn").onclick = function() {
+      if (targetLink) {
+        window.open(targetLink, "_blank");
+      } else {
+        alert("Pautan video tidak dijumpai!");
+      }
+    };
+
+    // Butang Cara Menulis
     document.getElementById("successWriteBtn").onclick = function() {
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
-    // Paparkan panel utama kejayaan
+    // Paparkan menu 5 butang pilihan kejayaan
     document.getElementById("actionButtons").style.display = "flex";
 
   } else {
@@ -209,7 +214,7 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
-    // Paparkan imej flashcard kod asal untuk rujukan pembetulan
+    // Paparkan imej flashcard pembetulan
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
