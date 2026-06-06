@@ -3,30 +3,26 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Escape Box Game</title>
+  <title>ABC QR Scanner</title>
 
   <script src="https://unpkg.com/html5-qrcode"></script>
 
   <link rel="stylesheet" href="styleABC.css">
 </head>
-
 <body>
 
   <div class="card">
-    <div class="logo-square-box">
+    <div class="logo-large-box">
       <img src="ABC LOGO.png" alt="ABC Logo" class="app-logo">
     </div>
 
-    <h2>🎒 Escape Box Game</h2>
-
-    <div id="lock">🔒</div>
     <div id="icon"></div>
 
     <div class="progress">
       <div class="bar" id="bar"></div>
     </div>
 
-    <div id="result" style="font-weight: bold; color: #475569;">Imbas kod untuk mula permainan</div>
+    <div id="result">Imbas kod untuk mula permainan</div>
 
     <button id="btn1" onclick="startFirstScan()">📷 Scan Box Pertama</button>
     <button id="btn2" onclick="startSecondScan()" disabled>📷 Scan Box Kedua</button>
@@ -34,24 +30,19 @@
     <div id="reader"></div>
 
     <div id="gameAreaContainer">
-      <iframe id="gameIframe" src="" allow="autoplay"></iframe>
-      
-      <div id="iframeFallbackBox">
-        <p style="font-size: 14px; color: #475569; font-weight: bold; margin-bottom: 10px;">Klik butang di bawah untuk mula belajar! 👇</p>
-        <button id="fallbackPlayBtn" onclick="" style="background: #22c55e; color: white; padding: 10px 25px;">🎥 Play Video</button>
-      </div>
+      <iframe id="gameIframe" src=""></iframe>
     </div>
 
     <div id="actionButtons" class="action-buttons-container">
       <button id="abcSongBtn" onclick="openBonusLink('https://www.starfall.com/h/abcs/song/?mg=k')">🎶 Jom Menyanyi ABC!</button>
-      <button id="matchGameBtn" onclick="goToMatchPage()">🧩 Game Padanan Huruf</button>
+      <button id="matchGameBtn" onclick="goToPage('match.html')">🧩 Game Padanan Huruf</button>
       <button id="backBtn" onclick="resetGame()">🔄 Main Semula</button>
     </div>
 
     <div id="failButtons" class="fail-buttons-container">
       <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
-      <button class="btn-song" onclick="openLocalMedia('ABC SONG.mp4')">🎶 Play ABC</button>
-      <button class="btn-match" onclick="goToMatchPage()">🧩 Alphabet Match</button>
+      <button class="btn-song" onclick="goToPlayABC()">🎶 Play ABC</button>
+      <button class="btn-match" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
       <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
 
