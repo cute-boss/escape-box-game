@@ -37,10 +37,10 @@
 
     <div class="game-menu-container">
       <button class="btn-g1" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1: Find the Match</button>
-      <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">✈ Game 2: Airplane Mode</button>
-      <button class="btn-g3" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🛩 Game 3: Quiz Variant</button>
-      <button class="btn-g4" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎈 Game 4: Balloon Pop</button>
-      <button class="btn-g5" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🐱 Game 5: Chase Game</button>
+      <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/98486528/uppercase-lowercase-alphabet-match')">✈ Game 2: Airplane Mode</button>
+      <button class="btn-g3" onclick="launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')">🛩 Game 3: Quiz Variant</button>
+      <button class="btn-g4" onclick="launchGame('https://wordwall.net/resource/23644070/letter-match/letter-match')">🎈 Game 4: Balloon Pop</button>
+      <button class="btn-g5" onclick="launchGame('https://wordwall.net/resource/66703372/matching-uppercase-and-lowercase-letters')">🐱 Game 5: Chase Game</button>
     </div>
 
     <div class="navigation-divider">
@@ -50,14 +50,11 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    let letter = urlParams.get('letter') || '';
-
     function launchGame(url) { window.open(url, "_blank"); }
     
+    // Dipautkan dengan history tugasan asal browser
     function goBackHistory() {
-      if (letter) window.location.href = "index.html?letter=" + letter;
-      else window.location.href = "index.html";
+      window.history.back();
     }
     
     function goHome() { window.location.href = "index.html"; }
