@@ -31,12 +31,14 @@
       <img id="flashcardImg" src="" alt="Flashcard View">
     </div>
 
+    <!-- Panel jika BETUL -->
     <div id="actionButtons" class="action-buttons-container">
       <button id="abcSongBtn" onclick="openBonusLink('https://www.starfall.com/h/abcs/song/?mg=k')">🎶 Jom Menyanyi ABC!</button>
       <button id="matchGameBtn" onclick="goToPage('match.html')">🧩 Game Padanan Huruf</button>
-      <button id="backBtn" onclick="resetGame()">🔄 Main Semula</button>
+      <button id="backBtn" class="btn-retry" onclick="resetGame()">🔄 Main Semula</button>
     </div>
 
+    <!-- Panel jika SALAH -->
     <div id="failButtons" class="fail-buttons-container">
       <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
       <button class="btn-song" onclick="goToPlayABC()">🎶 Play ABC</button>
