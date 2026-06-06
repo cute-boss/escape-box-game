@@ -1,4 +1,5 @@
 How to Play the ABC QR Game 🎮
+
 Step 1: Scan the QR Codes 📷
 Press "Scan Box Pertama" and point your camera at the first QR code.
 
