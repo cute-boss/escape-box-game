@@ -31,3 +31,5 @@ Child-Friendly Audio & Speech: The app talks directly to the children, using fri
 Fun Mini-Games Included: It features a dedicated "Alphabet Match" dashboard filled with exciting touch-screen mini-games (like balloon popping and tracking games) to reinforce what they've learned.
 
 No App Install Required: It runs entirely inside a standard web browser, making it incredibly fast and easy to open on any phone or tablet with a camera.
+
+
