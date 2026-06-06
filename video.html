@@ -108,10 +108,15 @@
     }
 
     // Dibetulkan sepenuhnya untuk bertindak sama seperti anak panah belakang browser
+    // Ditambah baik untuk sokongan penuh Android & iOS tanpa ralat 'first page'
     function goBack() {
-      if (window.history.length > 1) {
-        window.history.back();
+      // Semak jika pelayar web mempunyai dokumen rujukan sebelum ini (referrer)
+      if (document.referrer && document.referrer.includes("match.html")) {
+        window.location.href = "match.html?letter=" + letter;
+      } else if (document.referrer && document.referrer.includes("index_2.html")) {
+        window.location.href = "index_2.html";
       } else {
+        // Laluan selamat: Jika datang dari halaman utama scan (index.html)
         window.location.href = "index.html";
       }
     }
