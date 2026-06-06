@@ -22,8 +22,6 @@
       flex-direction: column;
       gap: 8px;
     }
-    .btn-back { background: #64748b; color: white; }
-    .btn-reset-home { background: #0284c7; color: white; }
   </style>
 </head>
 <body>
@@ -36,6 +34,7 @@
     <h2>🧩 Pilih Game</h2>
 
     <div class="game-menu-container">
+      <!-- Kesemua 5 Pautan Wordwall yang betul telah dikemas kini di sini -->
       <button class="btn-g1" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1: Find the Match</button>
       <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/98486528/uppercase-lowercase-alphabet-match')">✈ Game 2: Airplane Mode</button>
       <button class="btn-g3" onclick="launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')">🛩 Game 3: Quiz Variant</button>
@@ -44,6 +43,7 @@
     </div>
 
     <div class="navigation-divider">
+      <!-- Diselaraskan warna mengikut kelas CSS global (.btn-back = Kelabu, .btn-reset-home = Biru) -->
       <button class="btn-back" onclick="goBackHistory()">⬅ Kembali</button>
       <button class="btn-reset-home" onclick="goHome()">🔄 Scan Semula</button>
     </div>
@@ -52,9 +52,13 @@
   <script>
     function launchGame(url) { window.open(url, "_blank"); }
     
-    // Dipautkan dengan history tugasan asal browser
+    // Berfungsi tepat seperti panah balik pelayar peranti anda
     function goBackHistory() {
-      window.history.back();
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
     }
     
     function goHome() { window.location.href = "index.html"; }
