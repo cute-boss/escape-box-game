@@ -19,6 +19,15 @@ body {
   border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
 }
 
+/* Style untuk Logo Baru */
+.app-logo {
+  display: block;
+  margin: 0 auto 10px auto;
+  max-width: 120px;
+  height: auto;
+  object-fit: contain;
+}
+
 h2 {
   color: #0284c7;
   font-size: 26px;
