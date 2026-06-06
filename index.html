@@ -16,8 +16,8 @@
 
     <div id="icon"></div>
 
-    <div class="progress" style="width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; margin-bottom: 12px; overflow: hidden;">
-      <div class="bar" id="bar" style="width: 0%; background: #4caf50; height: 100%; transition: width 0.3s;"></div>
+    <div class="progress">
+      <div class="bar" id="bar"></div>
     </div>
 
     <div id="result">Imbas kod untuk mula permainan</div>
@@ -27,7 +27,7 @@
 
     <div id="reader"></div>
 
-    <div id="gameAreaContainer" style="display: none;">
+    <div id="gameAreaContainer">
       <img id="flashcardImg" src="" alt="Flashcard View">
     </div>
 
@@ -40,7 +40,7 @@
     </div>
 
     <div id="failButtons" class="fail-buttons-container" style="display: none;">
-      <button id="failVideoBtn">🔤 Belajar Huruf Besar & Kecil</button>
+      <button id="failVideoBtn">🎥 Video Huruf</button>
       <button id="failPlayABCBtn" onclick="goToPlayABC()">🎶 Play ABC</button>
       <button id="failMatchBtn" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
       <button id="failRetryBtn" onclick="resetGame()">🔄 Scan Semula</button>
