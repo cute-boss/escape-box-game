@@ -35,7 +35,7 @@ bgMusic.volume = 0.2;
 
 function startFirstScan() {
   if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
-  bgMusic.play().catch(e => console.log("Muzik latar disekat pelayar", e));
+  bgMusic.play().catch(e => console.log("Muzik latar disekat", e));
   
   html5QrcodeScanner = new Html5Qrcode("reader");
   html5QrcodeScanner.start(
@@ -47,7 +47,7 @@ function startFirstScan() {
       document.getElementById("btn1").disabled = true;
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
       document.getElementById("btn2").disabled = false;
-      document.getElementById("bar").style.width = "50%";
+      document.getElementById("bar").style.width = "50%"; // Mengubah progress bar ke 50%
       document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
       
       html5QrcodeScanner.stop().then(() => {
@@ -70,12 +70,12 @@ function startSecondScan() {
       
       document.getElementById("btn2").disabled = true;
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%";
+      document.getElementById("bar").style.width = "100%"; // Mengubah progress bar ke 100%
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
         
-        // Simpan status scan ke sessionStorage supaya data tidak hilang bila tekan kembali
+        // Simpan data imbasan ke sessionStorage (Ralat tanda sengkang dibersihkan di sini)
         sessionStorage.setItem("lastFirstBox", firstBox);
         sessionStorage.setItem("lastSecondBox", secondBox);
         sessionStorage.setItem("hasScanned", "true");
@@ -124,7 +124,6 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // Pautan klik dinamik menggunakan ID baharu yang selamat daripada gangguan warna CSS
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan tidak ditemui!"); }
@@ -164,7 +163,6 @@ function goToPage(page) {
   window.location.href = firstBox ? page + "?letter=" + firstBox : page; 
 }
 
-// Dibetulkan fungsi pautan lagu
 function goToPlayABC() { 
   sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
@@ -178,15 +176,15 @@ function resetGame() {
   window.location.href = "index.html"; 
 }
 
-// SISTEM MEMUATKAN SEMULA KEPUTUSAN SCAN LAMA APABILA KEMBALI (BACK)
+// MEMULAKAN SEMULA LOGIK JIKA PENGGUNA TEKAN KEMBALI (BACK)
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
     firstBox = sessionStorage.getItem("lastFirstBox");
-    let secondBox = sessionStorage.getItem(\"lastSecondBox\");
+    let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
       bgMusic.play().catch(e => console.log(e));
-      document.getElementById("bar").style.width = "100%";
+      document.getElementById("bar").style.width = "100%"; // Kekalkan progress bar penuh semasa imbasan sedia ada dimuatkan
       semakKeputusan(firstBox, secondBox);
     }
   }
