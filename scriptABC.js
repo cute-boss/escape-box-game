@@ -164,7 +164,7 @@ function startSecondScanFallback() {
   ).catch(err => console.error(err));
 }
 
-/* ================= FIX BERFUNGSI: RESULT & CHECK ================= */
+/* ================= RESULT CHECK ================= */
 function check(secondBox) {
   let ok = (firstBox === secondBox);
   document.getElementById("btn1").style.display = "none";
@@ -174,37 +174,30 @@ function check(secondBox) {
   let container = document.getElementById("gameAreaContainer");
   let imageEl = document.getElementById("flashcardImg");
 
+  // Dapatkan pautan Starfall berdasarkan kotak pertama yang discan
+  let targetLink = videoLinks[firstBox]; 
+
   if (ok) {
     coinSound();
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
-    
-    // PEMBETULAN: Memastikan teks kejayaan berubah dengan tepat di skrin
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
-    // PEMBETULAN: Bunyi suara mengikut teks baharu
     setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 200);
 
-    // Paparkan imej flashcard huruf sepadan di bawah teks
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    // PEMBETULAN MUTAKHIR: Mengikat fungsi klik Video Huruf secara dinamik ke pautan Starfall yang betul
-    let targetLink = videoLinks[firstBox]; 
+    // Jika berjaya, butang membuka pautan luar Video Starfall
     document.getElementById("successVideoBtn").onclick = function() {
-      if (targetLink) {
-        window.open(targetLink, "_blank");
-      } else {
-        alert("Pautan video tidak dijumpai!");
-      }
+      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
 
-    // Butang Cara Menulis
+    // Butang Cara Menulis pergi ke video.html
     document.getElementById("successWriteBtn").onclick = function() {
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
-    // Paparkan menu 5 butang pilihan kejayaan
     document.getElementById("actionButtons").style.display = "flex";
 
   } else {
@@ -214,13 +207,20 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
-    // Paparkan imej flashcard pembetulan
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
+    /* ================= KEMASKINI DI SINI ================= */
+    // PEMBETULAN: Mengubah butang Video Huruf panel gagal untuk membuka Starfall dinamik (sama seperti panel sukses)
     document.getElementById("failVideoBtn").onclick = function() {
-      window.location.href = "video.html?type=stroke&letter=" + firstBox;
+      if (targetLink) { 
+        window.open(targetLink, "_blank"); 
+      } else { 
+        alert("Pautan video tidak dijumpai!"); 
+      }
     };
+    /* ==================================================== */
+
     document.getElementById("failButtons").style.display = "flex";
   }
 }
