@@ -80,11 +80,21 @@
     let labelOne = document.getElementById("labelOne");
 
     if (type === 'song') {
+      // KEMASKINI: Ditukar laluan ke dalam folder LAGU/
       titleElement.innerText = "🎶 Lagu ABC";
       titleElement.style.color = "#a855f7";
       labelOne.innerText = "Lagu ABC";
-      videoElement.src = "ABC SONG.mp4";
+      videoElement.src = "LAGU/ABC SONG.mp4";
       blockTwo.style.display = "none";
+      
+    } else if (type === 'bonus_song') {
+      // KEMASKINI BARU: Mainkan lagu bonus jika gagal scan QR
+      titleElement.innerText = "🎶 ABCs Alphabet Song";
+      titleElement.style.color = "#ec4899";
+      labelOne.innerText = "Lagu Belajar Abjad";
+      videoElement.src = "LAGU/ABCs Alphabet Song.mp4";
+      blockTwo.style.display = "none";
+      
     } else {
       titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + ")";
       titleElement.style.color = "#06b6d4";
@@ -99,7 +109,6 @@
       secondVideoElement.play().catch(function() { console.log("Autoplay blocked for second video"); });
     }
 
-    // PENYELASAIAN UTAMU KEMBALI (iOS & Android Pintar)
     function goBack() {
       let previousPage = sessionStorage.getItem("prevPage");
       if (previousPage && previousPage.includes("match.html")) {
