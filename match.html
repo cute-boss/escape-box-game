@@ -27,7 +27,7 @@
     <div class="game-grid-layout">
       <button class="btn-g1" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1</button>
       <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/98486528/uppercase-lowercase-alphabet-match')">✈ Game 2</button>
-      <button class="btn-g3" onclick="launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')">🛩 Game 3</button>
+      <button class="btn-g3" onclick=\"launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')\">🛩 Game 3</button>
       <button class="btn-g4" onclick="launchGame('https://wordwall.net/resource/23644070/letter-match/letter-match')">🎈 Game 4: Balloon</button>
       <button class="btn-g5" onclick="launchGame('https://wordwall.net/resource/66703372/matching-uppercase-and-lowercase-letters')">🐱 Game 5: Chase</button>
     </div>
@@ -40,16 +40,39 @@
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    let letter = urlParams.get('letter') || 'A';
+    let letter = urlParams.get('letter') || '';
 
-    function launchGame(url) { window.open(url, "_blank"); }
-    
+    // DIKEMASKINI: Sistem Audio untuk halaman match.html
+    let matchBgMusic = new Audio("LAGU/BG SOUND.mpeg");
+    matchBgMusic.loop = true;
+    matchBgMusic.volume = 0.15;
+
+    // Mainkan muzik sebaik sahaja halaman dibuka
+    window.onload = function() {
+      matchBgMusic.play().catch(function(err) {
+        console.log("Muzik match disekat, menunggu klik pengguna:", err);
+      });
+    };
+
+    function launchGame(url) {
+      // Pastikan muzik diperlahankan atau dimatikan jika berpindah ke pautan luar game
+      matchBgMusic.volume = 0.05; 
+      window.open(url, '_blank');
+    }
+
     function goBackHistory() {
-      // Mengarahkan pulang terus dengan selamat ke index.html
+      matchBgMusic.pause(); // Hentikan lagu
+      let previousPage = sessionStorage.getItem("prevPage") || "index.html";
+      window.location.href = previousPage;
+    }
+
+    function goHome() {
+      matchBgMusic.pause(); // Hentikan lagu
+      sessionStorage.removeItem("lastFirstBox");
+      sessionStorage.removeItem("lastSecondBox");
+      sessionStorage.removeItem("hasScanned");
       window.location.href = "index.html";
     }
-    
-    function goHome() { window.location.href = "index.html"; }
   </script>
 </body>
 </html>
