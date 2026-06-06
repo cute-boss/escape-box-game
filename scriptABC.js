@@ -34,22 +34,16 @@ bgMusic.loop = true;
 bgMusic.volume = 0.2;
 
 function startFirstScan() {
-  if(html5QrcodeScanner) { 
-    html5QrcodeScanner.clear().catch(err => console.log("Ralat clear:", err)); 
-  }
-  bgMusic.play().catch(e => console.log("Muzik latar disekat pelayar", e));
+  if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
+  bgMusic.play().catch(e => console.log("Muzik disekat", e));
   
-  // Menggunakan Html5Qrcode secara terus (Direct Mode) tanpa hiasan UI yang mengacau sistem
   html5QrcodeScanner = new Html5Qrcode("reader");
-  
   html5QrcodeScanner.start(
-    { facingMode: "environment" }, // Memaksa penggunaan kamera belakang utama (autofokus tajam)
-    { 
-      fps: 15,                     // Meningkatkan kadar bingkai gambar supaya imbasan lebih responsif
-      qrbox: { width: 250, height: 250 } 
-    },
+    { facingMode: "environment" },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       firstBox = decodedText.trim().toUpperCase();
+      sessionStorage.setItem("lastFirstBox", firstBox);
       
       document.getElementById("btn1").disabled = true;
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
@@ -59,32 +53,23 @@ function startFirstScan() {
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
-      }).catch(err => console.log("Gagal menghentikan kamera:", err));
+      });
     },
-    (errorMessage) => {
-      // Mengabaikan ralat semasa mencari kod QR untuk mengelakkan sangkut (freeze)
-    }
-  ).catch(err => {
-    console.log("Ralat memulakan kamera:", err);
-    alert("Gagal mengakses kamera. Sila pastikan kebenaran (Permission) kamera telah dibenarkan pada pelayar web anda.");
-  });
+    (errorMessage) => {}
+  ).catch(err => console.log("Gagal mulakan kamera", err));
 }
 
 function startSecondScan() {
-  if(html5QrcodeScanner) { 
-    html5QrcodeScanner.clear().catch(err => console.log("Ralat clear:", err)); 
-  }
+  if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
   
   html5QrcodeScanner = new Html5Qrcode("reader");
-  
   html5QrcodeScanner.start(
     { facingMode: "environment" },
-    { 
-      fps: 15, 
-      qrbox: { width: 250, height: 250 } 
-    },
+    { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       let secondBox = decodedText.trim().toUpperCase();
+      sessionStorage.setItem("lastSecondBox", secondBox);
+      sessionStorage.setItem("hasScanned", "true");
       
       document.getElementById("btn2").disabled = true;
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
@@ -92,18 +77,11 @@ function startSecondScan() {
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
-        
-        sessionStorage.setItem("lastFirstBox", firstBox);
-        sessionStorage.setItem("lastSecondBox", secondBox);
-        sessionStorage.setItem("hasScanned", "true");
-        
         semakKeputusan(firstBox, secondBox);
-      }).catch(err => console.log("Gagal menghentikan kamera:", err));
+      });
     },
     (errorMessage) => {}
-  ).catch(err => {
-    console.log("Ralat memulakan kamera kedua:", err);
-  });
+  ).catch(err => console.log("Gagal mulakan kamera", err));
 }
 
 function successSound() {
@@ -136,7 +114,7 @@ function semakKeputusan(fBox, sBox) {
     successSound();
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#16a34a";
-    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Padanan Betul!</div>";
+    document.getElementById("result").innerHTML = "<div style='color:#16a34a; font-size:20px;'>Tahniah! Padanan Betul!</div>";
     
     setTimeout(() => { speak("Tahniah! Padanan Betul"); }, 400);
 
@@ -145,45 +123,46 @@ function semakKeputusan(fBox, sBox) {
 
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
-      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
+      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan tidak ditemui!"); }
     };
 
     document.getElementById("successWriteBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
+      sessionStorage.setItem("prevPage", "index.html"); 
       window.location.href = "video.html?type=stroke&letter=" + fBox;
     };
 
     document.getElementById("actionButtons").style.display = "flex";
+    document.getElementById("failButtons").style.display = "none";
 
   } else {
     failSound();
     document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
-    document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
+    document.getElementById("result").innerHTML = "<div style='color:#dc2626;'>Jangan risau! Cuba lagi ya!</div>";
     
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
+    // DIKEMASKINI: Menghantar jenis video 'bonus_song' (Tajuk baru diuruskan dalam video.html)
     document.getElementById("failVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
-      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
+      window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
     };
 
+    document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
   }
 }
 
-function openBonusLink(url) { window.open(url, "_blank"); }
-
 function goToPage(page) { 
-  sessionStorage.setItem("prevPage", "index.html");
+  sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? page + "?letter=" + firstBox : page; 
 }
 
 function goToPlayABC() { 
-  sessionStorage.setItem("prevPage", "index.html");
+  sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
 }
 
@@ -195,15 +174,15 @@ function resetGame() {
   window.location.href = "index.html"; 
 }
 
-// MEMULAKAN SEMULA DATA SELEPAS BUTANG KEMBALI (BACK) DITEKAN
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
     firstBox = sessionStorage.getItem("lastFirstBox");
     let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
-      bgMusic.play().catch(e => console.log(e));
-      document.getElementById("bar").style.width = "100%"; // Kekalkan progress bar penuh asal anda
+      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+      document.getElementById("bar").style.width = "100%";
       semakKeputusan(firstBox, secondBox);
     }
   }
