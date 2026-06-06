@@ -35,7 +35,7 @@ bgMusic.volume = 0.2;
 
 function startFirstScan() {
   if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
-  bgMusic.play().catch(e => console.log("Muzik latar disekat", e));
+  bgMusic.play().catch(e => console.log("Muzik disekat", e));
   
   html5QrcodeScanner = new Html5Qrcode("reader");
   html5QrcodeScanner.start(
@@ -43,11 +43,12 @@ function startFirstScan() {
     { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       firstBox = decodedText.trim().toUpperCase();
+      sessionStorage.setItem("lastFirstBox", firstBox);
       
       document.getElementById("btn1").disabled = true;
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
       document.getElementById("btn2").disabled = false;
-      document.getElementById("bar").style.width = "50%"; // Mengubah progress bar ke 50%
+      document.getElementById("bar").style.width = "50%";
       document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
       
       html5QrcodeScanner.stop().then(() => {
@@ -67,19 +68,15 @@ function startSecondScan() {
     { fps: 10, qrbox: { width: 250, height: 250 } },
     (decodedText) => {
       let secondBox = decodedText.trim().toUpperCase();
+      sessionStorage.setItem("lastSecondBox", secondBox);
+      sessionStorage.setItem("hasScanned", "true");
       
       document.getElementById("btn2").disabled = true;
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%"; // Mengubah progress bar ke 100%
+      document.getElementById("bar").style.width = "100%";
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
-        
-        // Simpan data imbasan ke sessionStorage (Ralat tanda sengkang dibersihkan di sini)
-        sessionStorage.setItem("lastFirstBox", firstBox);
-        sessionStorage.setItem("lastSecondBox", secondBox);
-        sessionStorage.setItem("hasScanned", "true");
-        
         semakKeputusan(firstBox, secondBox);
       });
     },
@@ -148,6 +145,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
+    // DIKEMASKINI: Menghantar jenis video 'bonus_song' (Tajuk baru diuruskan dalam video.html)
     document.getElementById("failVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
@@ -176,15 +174,15 @@ function resetGame() {
   window.location.href = "index.html"; 
 }
 
-// MEMULAKAN SEMULA LOGIK JIKA PENGGUNA TEKAN KEMBALI (BACK)
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
     firstBox = sessionStorage.getItem("lastFirstBox");
     let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
-      bgMusic.play().catch(e => console.log(e));
-      document.getElementById("bar").style.width = "100%"; // Kekalkan progress bar penuh semasa imbasan sedia ada dimuatkan
+      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+      document.getElementById("bar").style.width = "100%";
       semakKeputusan(firstBox, secondBox);
     }
   }
