@@ -34,14 +34,12 @@ body {
 }
 
 #icon { 
-  font-size: 80px; 
-  margin: 0px auto 5px auto; 
+  font-size: 80px; \n  margin: 0px auto 5px auto; 
 }
 
 #result {
   font-weight: bold; 
-  color: #475569; 
-  margin: 0px auto 12px auto; 
+  color: #475569; \n  margin: 0px auto 12px auto; 
   font-size: 18px;
 }
 
@@ -53,158 +51,126 @@ button {
   font-weight: bold;
   font-size: 16px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.2s;
+  transition: transform 0.2s, background 0.2s;
+  display: block;
+  text-decoration: none;
 }
 
 button:active {
   transform: scale(0.95);
 }
 
-#btn1, #btn2 { margin-top: 12px; }
-#btn1 { background: #38bdf8; color: white; }
-#btn2 { background: #f43f5e; color: white; }
+/* --- WARNA BUTANG INDEX.HTML --- */
+#btn1 {
+  background: #ff5722; /* Jingga Ceria */
+  color: white;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+#btn2 {
+  background: #4caf50; /* Hijau Epal */
+  color: white;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
 #btn2:disabled {
   background: #cbd5e1;
   color: #94a3b8;
+  cursor: not-allowed;
   box-shadow: none;
-}
-
-.action-buttons-container, 
-.fail-buttons-container {
-  display: none; 
-  flex-direction: column;
-  gap: 5px;
-  margin-top: 15px;
-}
-
-.btn-back, #backBtn, .btn-return-home { 
-  background: #64748b !important; 
-  color: white !important; 
-} 
-
-.btn-retry, .btn-reset-home { 
-  background: #0284c7 !important; 
-  color: white !important; 
-} 
-
-#abcSongBtn, .btn-song { background: #a855f7; color: white; margin-top: 5px; }
-#matchGameBtn, .btn-match { background: #ff7849; color: white; margin-top: 5px; }
-.btn-video { background: #06b6d4; color: white; margin-top: 5px; }
-
-.progress {
-  width: 85%;
-  height: 16px;
-  background: #f1f5f9;
-  margin: 0px auto 10px auto; 
-  border-radius: 20px;
-  border: 2px solid #e2e8f0;
-  overflow: hidden;
-}
-
-.bar {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #4ade80, #22c55e); 
-  border-radius: 20px;
-  transition: 0.4s;
 }
 
 #reader {
   width: 100%;
-  display: none;
-  margin-top: 15px;
   border-radius: 20px;
   overflow: hidden;
-  border: 3px dashed #38bdf8;
+  margin-top: 10px;
 }
 
 #gameAreaContainer {
-  width: 100%;
   display: none;
-  margin-top: 15px;
+  width: 100%;
+  margin: 15px auto 10px auto;
   border-radius: 20px;
-  border: 4px solid #cbd5e1; 
   overflow: hidden;
-  background: white;
-  padding: 10px;
+  border: 3px dashed #cbd5e1;
+  background: #f8fafc;
+  padding: 8px;
   box-sizing: border-box;
 }
 
 #flashcardImg {
   width: 100%;
   height: auto;
-  max-height: 260px;
-  object-fit: contain; 
-  pointer-events: none; 
+  border-radius: 12px;
+  display: block;
+  pointer-events: none;
   -webkit-user-drag: none;
   user-select: none;
 }
 
-/* Struktur Susunan 2 Video (Atas & Bawah) */
-.writing-video-section {
+/* Urus Atur Butang Tindakan */
+.action-buttons-container, .fail-buttons-container {
   display: none;
   flex-direction: column;
-  gap: 12px;
-  margin-top: 15px;
-}
-.video-block {
+  gap: 10px;
   width: 100%;
-  background: #f8fafc;
-  border-radius: 15px;
-  padding: 8px;
-  box-sizing: border-box;
-  border: 2px solid #e2e8f0;
-}
-.video-label {
-  font-size: 14px;
-  font-weight: bold;
-  color: #475569;
-  margin-bottom: 5px;
-}
-.video-wrapper {
-  width: 100%;
-  height: 150px;
-  background: #000;
-  border-radius: 10px;
-  overflow: hidden;
-}
-.video-wrapper video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+  margin-top: 10px;
 }
 
-/* Reka Bentuk Grid Interaktif Match Game (Halaman match.html) */
-.game-grid-layout {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr); 
-  gap: 8px;
-  margin: 15px 0;
-}
-.game-grid-layout button:nth-child(1),
-.game-grid-layout button:nth-child(2),
-.game-grid-layout button:nth-child(3) {
-  grid-column: span 2; 
-  font-size: 13px;
-  padding: 10px 5px;
-  border-radius: 15px;
-}
-.game-grid-layout button:nth-child(4),
-.game-grid-layout button:nth-child(5) {
-  grid-column: span 3;
-  font-size: 14px;
-  padding: 12px 10px;
-  border-radius: 18px;
+/* BUTANG APABILA BERJAYA MATCH (SUCCESS) */
+#successVideoBtn {
+  background: #e91e63; /* Merah Jambu (Pink) */
+  color: white;
 }
 
-.navigation-divider {
+#successWriteBtn {
+  background: #00bcd4; /* Cyan / Biru Langit Muda */
+  color: white;
+}
+
+#successPlayABCBtn {
+  background: #9c27b0; /* Ungu Magis */
+  color: white;
+}
+
+#successMatchBtn {
+  background: #ff9800; /* Amber / Oren Kunyit */
+  color: white;
+}
+
+#successRetryBtn {
+  background: #ffc107; /* Kuning Pisang */
+  color: #1e293b;
+}
+
+/* BUTANG APABILA GAGAL MATCH (FAIL) */
+#failVideoBtn {
+  background: #ec4899; /* Merah Jambu Fuchia */
+  color: white;
+}
+
+#failPlayABCBtn {
+  background: #3f51b5; /* Biru Indigo */
+  color: white;
+}
+
+#failMatchBtn {
+  background: #009688; /* Hijau Teal */
+  color: white;
+}
+
+#failRetryBtn {
+  background: #fbbf24; /* Amber Cerah */
+  color: #1e293b;
+}
+
+/* --- WARNA VIDEO.HTML --- */
+.btn-return-home {
+  background: #ff5722; /* Jingga Ceria */
+  color: white;
+  width: 100%;
   margin-top: 20px;
-  border-top: 2px dashed #e2e8f0;
-  padding-top: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
 }
-
-.good { color: #16a34a; font-size: 24px; font-weight: bold; }
-.bad { color: #dc2626; font-size: 24px; font-weight: bold; }
