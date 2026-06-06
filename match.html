@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Padanan Huruf - Escape Box Game</title>
+  
+  <link rel="stylesheet" href="matchABC.css">
+</head>
+<body>
+
+  <div class="card">
+    <div class="logo-square-box">
+      <img src="ABC LOGO.png" alt="ABC Logo" class="app-logo">
+    </div>
+
+    <h2>🧩 Pilih Game</h2>
+
+    <div class="game-menu-container">
+      <button class="btn-g1" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1: Find the Match</button>
+      <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">✈ Game 2: Airplane Mode</button>
+      <button class="btn-g3" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🛩 Game 3: Quiz Variant</button>
+      <button class="btn-g4" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎈 Game 4: Balloon Pop</button>
+      <button class="btn-g5" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🐱 Game 5: Chase Game</button>
+    </div>
+
+    <div class="navigation-divider">
+      <button class="btn-back" onclick="goBackHistory()">⬅ Kembali</button>
+      <button class="btn-reset-home" onclick="goHome()">🔄 Scan Semula</button>
+    </div>
+  </div>
+
+  <script>
+    function launchGame(url) {
+      window.open(url, "_blank");
+    }
+    function goBackHistory() {
+      if(document.referrer.includes("index.html")) {
+        window.history.back();
+      } else {
+        window.location.href = "index.html";
+      }
+    }
+    function goHome() {
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>
