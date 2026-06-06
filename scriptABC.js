@@ -74,6 +74,12 @@ function startSecondScan() {
       
       html5QrcodeScanner.stop().then(() => {
         document.getElementById("reader").innerHTML = "";
+        
+        // Simpan status scan ke sessionStorage supaya data tidak hilang bila tekan kembali
+        sessionStorage.setItem("lastFirstBox", firstBox);
+        sessionStorage.setItem("lastSecondBox", secondBox);
+        sessionStorage.setItem("hasScanned", "true");
+        
         semakKeputusan(firstBox, secondBox);
       });
     },
@@ -118,6 +124,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
+    // Pautan klik dinamik menggunakan ID baharu yang selamat daripada gangguan warna CSS
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan tidak ditemui!"); }
@@ -157,6 +164,7 @@ function goToPage(page) {
   window.location.href = firstBox ? page + "?letter=" + firstBox : page; 
 }
 
+// Dibetulkan fungsi pautan lagu
 function goToPlayABC() { 
   sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
@@ -164,5 +172,22 @@ function goToPlayABC() {
 
 function resetGame() { 
   bgMusic.pause(); 
+  sessionStorage.removeItem("lastFirstBox");
+  sessionStorage.removeItem("lastSecondBox");
+  sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html"; 
 }
+
+// SISTEM MEMUATKAN SEMULA KEPUTUSAN SCAN LAMA APABILA KEMBALI (BACK)
+window.onload = function() {
+  let hasScanned = sessionStorage.getItem("hasScanned");
+  if (hasScanned === "true") {
+    firstBox = sessionStorage.getItem("lastFirstBox");
+    let secondBox = sessionStorage.getItem(\"lastSecondBox\");
+    if (firstBox) {
+      bgMusic.play().catch(e => console.log(e));
+      document.getElementById("bar").style.width = "100%";
+      semakKeputusan(firstBox, secondBox);
+    }
+  }
+};
