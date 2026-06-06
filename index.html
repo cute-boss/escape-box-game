@@ -1,53 +1,623 @@
 <!doctype html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ABC Game</title>
-  <script src="https://unpkg.com/html5-qrcode"></script>
-  <link rel="stylesheet" href="styleABC.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Escape Box Game</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+/* UI Tema Taman Permainan Ceria & Terang untuk Kanak-Kanak */
+body{
+  margin:0;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', Arial, sans-serif;
+  background: linear-gradient(135deg, #e0f2fe, #fae8ff); /* Biru langit & Pink lembut */
+  color: #1e293b;
+  text-align:center;
+  padding-top:20px;
+}
+.card{
+  display:inline-block;
+  background: white;
+  padding:25px;
+  border-radius:30px;
+  width:90%;
+  max-width:380px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+  border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
+}
+h2 {
+  color: #0284c7;
+  font-size: 26px;
+  margin: 5px auto 0px auto;
+}
+#lock{font-size:75px; margin-bottom: 5px;}
+#icon{font-size:90px;margin:5px;}
+
+/* Butang yang bulat dan ceria */
+button{
+  padding: 12px 20px;
+  border:none;
+  border-radius:50px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+button:active {
+  transform: scale(0.95);
+}
+#btn1, #btn2 {
+  margin-top:12px;
+}
+#btn1 {
+  background: #38bdf8; /* Biru terang */
+  color: white;
+}
+#btn2 {
+  background: #f43f5e; /* Merah jambu ceria */
+  color: white;
+}
+#btn2:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  box-shadow: none;
+}
+
+/* Style Khusus untuk Butang Menu Selepas Menang */
+.action-buttons-container, .fail-buttons-container {
+  display: none; 
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 15px;
+}
+
+/* Penyelarasan Warna Seragam Secara Global */
+.btn-back, #backBtn {
+  background: #64748b !important; /* Kelabu */
+  color: white !important;
+}
+.btn-retry, .btn-reset-home {
+  background: #0284c7 !important; /* Biru */
+  color: white !important;
+}
+#abcSongBtn, .btn-song {
+  background: #a855f7; /* Ungu */
+  color: white;
+  margin-top: 5px;
+}
+#matchGameBtn, .btn-match {
+  background: #ff7849; /* Oren */
+  color: white;
+  margin-top: 5px;
+}
+.btn-video {
+  background: #06b6d4; /* Cyan */
+  color: white;
+  margin-top: 5px;
+}
+
+.progress{
+  width:85%;
+  height:16px;
+  background:#f1f5f9;
+  margin: 0px auto 10px auto;
+  border-radius:20px;
+  border: 2px solid #e2e8f0;
+  overflow: hidden;
+}
+.bar{
+  height:100%;
+  width:0%;
+  background: linear-gradient(90deg, #4ade80, #22c55e); 
+  border-radius:20px;
+  transition:0.4s;
+}
+#reader{
+  width:100%;
+  display:none;
+  margin-top:15px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px dashed #38bdf8;
+}
+
+/* Ruang Flashcard & Video di lokasi kamera (Tiada Border Merah) */
+#gameAreaContainer {
+  width:100%;
+  display:none;
+  margin-top:15px;
+  border-radius:20px;
+  border:4px solid #cbd5e1; /* Garisan kelabu neutral yang bersih */
+  overflow:hidden;
+  background:white;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+#flashcardImg {
+  width: 100%;
+  height: auto;
+  max-height: 260px;
+  object-fit: contain;
+  pointer-events: none;
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* Reka Bentuk Struktur Baharu Pemain Video (2 Video Atas & Bawah) */
+.writing-video-section {
+  display: none;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 15px;
+}
+.video-block {
+  width: 100%;
+  background: #f8fafc;
+  border-radius: 15px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 2px solid #e2e8f0;
+}
+.video-label {
+  font-size: 15px;
+  font-weight: bold;
+  color: #475569;
+  margin-bottom: 6px;
+}
+.video-wrapper {
+  width: 100%;
+  height: 160px;
+  background: #000;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.video-wrapper video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.good{color:#16a34a; font-size:24px; font-weight: bold;}
+.bad{color:#dc2626; font-size:24px; font-weight: bold;}
+</style>
 </head>
+
 <body>
 
-  <div class="card">
-    <div class="logo-large-box">
-      <img src="ABC LOGO.png" alt="ABC Logo" class="app-logo">
+<div class="card">
+
+<h2>🎒 Escape Box Game</h2>
+
+<div id="lock">🔒</div>
+<div id="icon"></div>
+
+<div class="progress">
+  <div class="bar" id="bar"></div>
+</div>
+
+<div id="result" style="font-weight: bold; color: #475569; margin-bottom: 12px;">Imbas kod untuk mula permainan</div>
+
+<button id="btn1" onclick="startFirstScan()">📷 Scan Box Pertama</button>
+<button id="btn2" onclick="startSecondScan()" disabled>📷 Scan Box Kedua</button>
+
+<div id="reader"></div>
+
+<div id="gameAreaContainer">
+  <img id="flashcardImg" src="" alt="Flashcard View">
+</div>
+
+<div id="writingVideoArea" class="writing-video-section">
+  <div class="video-block">
+    <div class="video-label" id="labelCapital">Cara Menulis Huruf Besar</div>
+    <div class="video-wrapper">
+      <video id="videoCapital" controls playsinline loop></video>
     </div>
-
-    <div id="icon"></div>
-
-    <div class="progress">
-      <div class="bar" id="bar"></div>
-    </div>
-
-    <div id="result">Imbas kod untuk mula permainan</div>
-
-    <button id="btn1" onclick="startFirstScan()">📷 Scan Box Pertama</button>
-    <button id="btn2" onclick="startSecondScan()" disabled>📷 Scan Box Kedua</button>
-
-    <div id="reader"></div>
-
-    <div id="gameAreaContainer">
-      <img id="flashcardImg" src="" alt="Flashcard View">
-    </div>
-
-    <div id="actionButtons" class="action-buttons-container">
-      <button class="btn-video" id="successVideoBtn">🎥 Video Huruf</button>
-      <button class="btn-song" id="successWriteBtn">✍ Cara Menulis</button>
-      <button class="btn-match" onclick="goToPlayABC()">🎶 Play ABC Song</button>
-      <button style="background: #ff7849; color: white; margin-top: 5px;" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
-      <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
-    </div>
-
-    <div id="failButtons" class="fail-buttons-container">
-      <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
-      <button class="btn-song" onclick="goToPlayABC()">🎶 Play ABC</button>
-      <button class="btn-match" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
-      <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
-    </div>
-
   </div>
+  
+  <div class="video-block">
+    <div class="video-label" id="labelSmall">Cara Menulis Huruf Kecil</div>
+    <div class="video-wrapper">
+      <video id="videoSmall" controls playsinline loop></video>
+    </div>
+  </div>
+</div>
 
-  <script src="scriptABC.js"></script>
+<div id="actionButtons" class="action-buttons-container">
+  <button class="btn-video" id="successVideoBtn">🎥 Video Huruf (Starfall)</button>
+  <button class="btn-song" id="successWriteBtn">✍ Cara Menulis</button>
+  <button class="btn-match" onclick="playAbcSongVideo()">🎶 Play ABC Song</button>
+  <button style="background: #ff7849; color: white; margin-top: 5px;" onclick="openBonusLink('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🧩 Game Padanan Huruf</button>
+  <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
+</div>
+
+<div id="failButtons" class="fail-buttons-container">
+  <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
+  <button class="btn-song" onclick="playAbcSongVideo()">🎶 Play ABC</button>
+  <button class="btn-match" onclick="openBonusLink('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🧩 Alphabet Match</button>
+  <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
+</div>
+
+</div>
+
+<div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11,18,32,0.9); z-index:99999;">
+</div>
+
+<script>
+
+let firstBox=null;
+const videoLinks = {
+  A:"https://www.starfall.com/h/abcs/letter-a/?mg=k",
+  B:"https://www.starfall.com/h/abcs/letter-b/?mg=k",
+  C:"https://www.starfall.com/h/abcs/letter-c/?mg=k",
+  D:"https://www.starfall.com/h/abcs/letter-d/?mg=k",
+  E:"https://www.starfall.com/h/abcs/letter-e/?mg=k",
+  F:"https://www.starfall.com/h/abcs/letter-f/?mg=k",
+  G:"https://www.starfall.com/h/abcs/letter-g/?mg=k",
+  H:"https://www.starfall.com/h/abcs/letter-h/?mg=k",
+  I:"https://www.starfall.com/h/abcs/letter-i/?mg=k",
+  J:"https://www.starfall.com/h/abcs/letter-j/?mg=k",
+  K:"https://www.starfall.com/h/abcs/letter-k/?mg=k",
+  L:"https://www.starfall.com/h/abcs/letter-l/?mg=k",
+  M:"https://www.starfall.com/h/abcs/letter-m/?mg=k",
+  N:"https://www.starfall.com/h/abcs/letter-n/?mg=k",
+  O:"https://www.starfall.com/h/abcs/letter-o/?mg=k",
+  P:"https://www.starfall.com/h/abcs/letter-p/?mg=k",
+  Q:"https://www.starfall.com/h/abcs/letter-q/?mg=k",
+  R:"https://www.starfall.com/h/abcs/letter-r/?mg=k",
+  S:"https://www.starfall.com/h/abcs/letter-s/?mg=k",
+  T:"https://www.starfall.com/h/abcs/letter-t/?mg=k",
+  U:"https://www.starfall.com/h/abcs/letter-u/?mg=k",
+  V:"https://www.starfall.com/h/abcs/letter-v/?mg=k",
+  W:"https://www.starfall.com/h/abcs/letter-w/?mg=k",
+  X:"https://www.starfall.com/h/abcs/letter-x/?mg=k",
+  Y:"https://www.starfall.com/h/abcs/letter-y/?mg=k",
+  Z:"https://www.starfall.com/h/abcs/letter-z/?mg=k"
+};
+
+let audioCtx=null;
+let bgStarted=false;
+
+/* ================= AUDIO INIT ================= */
+
+function initAudio(){
+  if(!audioCtx){
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+  }
+}
+function resumeAudio(){
+  if(audioCtx && audioCtx.state==="suspended"){
+    audioCtx.resume();
+  }
+}
+
+/* ================= SOUND ================= */
+
+function coinSound(){
+  resumeAudio();
+  let o=audioCtx.createOscillator();
+  o.frequency.setValueAtTime(700,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(1200,audioCtx.currentTime+0.1);
+  o.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),120);
+}
+
+function failSound(){
+  resumeAudio();
+  let o=audioCtx.createOscillator();
+  o.frequency.setValueAtTime(300,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(150,audioCtx.currentTime+0.2);
+  o.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
+}
+
+function jumpSound(){
+  resumeAudio();
+  let o=audioCtx.createOscillator();
+  o.frequency.setValueAtTime(400,audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(800,audioCtx.currentTime+0.15);
+  o.connect(audioCtx.destination);
+  o.start();
+  setTimeout(()=>o.stop(),150);
+}
+
+/* ================= VOICE ================= */
+
+let voices=[];
+speechSynthesis.onvoiceschanged = () => {
+  voices = speechSynthesis.getVoices();
+};
+
+function getBestVoice(){
+  if(!voices.length) voices = speechSynthesis.getVoices();
+  return voices.find(v =>
+    v.lang.includes("ms") ||
+    v.lang.includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl"))
+  ) || voices[0];
+}
+
+function speak(text){
+  speechSynthesis.cancel();
+  let msg=new SpeechSynthesisUtterance(text);
+  msg.voice=getBestVoice();
+  msg.rate=1;
+  msg.pitch=1.2; 
+  speechSynthesis.speak(msg);
+}
+
+/* ================= BACKGROUND MUSIC ================= */
+
+let bgMusic=new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
+bgMusic.loop=true;
+bgMusic.volume=0;
+
+function startMusic(){
+  if(!bgStarted){
+    bgStarted=true;
+    bgMusic.play().then(()=>{
+      fadeInMusic();
+    }).catch(()=>{});
+  }
+}
+
+function fadeInMusic(){
+  let vol=0;
+  let fade=setInterval(()=>{
+    if(vol<0.15){
+      vol+=0.01;
+      bgMusic.volume=vol;
+    }else{
+      clearInterval(fade);
+    }
+  },200);
+}
+
+/* ================= PROGRESS ================= */
+
+function setProgress(step){
+  document.getElementById("bar").style.width=
+    step===1?"50%":"100%";
+}
+
+/* ================= SCAN FIRST ================= */
+
+function startFirstScan(){
+  initAudio();
+  resumeAudio();
+  jumpSound();
+  startMusic();
+
+  document.getElementById("gameAreaContainer").style.display="none";
+  document.getElementById("writingVideoArea").style.display="none";
+  document.getElementById("reader").style.display="block";
+
+  let scanner = new Html5Qrcode("reader");
+  
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15,
+      qrbox: 280,
+      videoConstraints: {
+        facingMode: { exact: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    },
+    (text)=>{
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      scanner.stop();
+      coinSound();
+      setProgress(1);
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+      document.getElementById("btn2").disabled = false;
+    }
+  ).catch(err => {
+      startFirstScanFallback();
+  });
+}
+
+function startFirstScanFallback(){
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text)=>{
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      scanner.stop(); coinSound(); setProgress(1);
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+      document.getElementById("btn2").disabled = false;
+    }
+  ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
+}
+
+/* ================= SCAN SECOND ================= */
+
+function startSecondScan(){
+  if(!firstBox){
+    alert("Scan box pertama dulu!");
+    return;
+  }
+
+  document.getElementById("gameAreaContainer").style.display="none";
+  document.getElementById("writingVideoArea").style.display="none";
+  document.getElementById("reader").style.display="block";
+  let scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15, 
+      qrbox: 280,
+      videoConstraints: {
+        facingMode: { exact: "environment" },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    },
+    (text)=>{
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      scanner.stop();
+      setProgress(2);
+      check(secondBox);
+    }
+  ).catch(err => {
+      startSecondScanFallback();
+  });
+}
+
+function startSecondScanFallback(){
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text)=>{
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase().trim() : text.toUpperCase().trim();
+      scanner.stop(); setProgress(2); check(secondBox);
+    }
+  ).catch(err => console.error(err));
+}
+
+/* ================= RESULT CHECK ================= */
+
+function check(secondBox){
+  let ok = (firstBox === secondBox);
+  
+  document.getElementById("btn1").style.display="none";
+  document.getElementById("btn2").style.display="none";
+  document.getElementById("reader").style.display="none";
+
+  let container = document.getElementById("gameAreaContainer");
+  let imageEl = document.getElementById("flashcardImg");
+
+  if(ok){
+    coinSound();
+    document.getElementById("icon").innerHTML="🎉";
+    document.getElementById("icon").style.color="#22c55e";
+    document.getElementById("lock").innerText="🔓";
+    
+    // Penukaran teks kejayaan baru
+    document.getElementById("result").innerHTML="<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
+    
+    setTimeout(()=>{
+      speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul");
+    },200);
+
+    // Papar imej flashcard yang sepadan
+    imageEl.src = "FLASHCARD/" + firstBox + ".png";
+    container.style.display="block";
+
+    // Konfigurasi fungsi klik Video Huruf (Starfall) secara dinamik
+    let targetLink = videoLinks[firstBox];
+    document.getElementById("successVideoBtn").onclick = function() {
+      if(targetLink) {
+        window.open(targetLink, "_blank");
+      } else {
+        alert("Pautan tidak dijumpai!");
+      }
+    };
+
+    // Butang Cara Menulis (Menunjukkan bahagian 2 video serentak)
+    document.getElementById("successWriteBtn").onclick = function() {
+      showWritingVideos(firstBox);
+    };
+
+    // Papar panel menu 5 butang
+    document.getElementById("actionButtons").style.display="flex";
+
+  } else {
+    failSound();
+    document.getElementById("icon").innerHTML="😢";
+    document.getElementById("icon").style.color="#dc2626";
+    document.getElementById("result").innerHTML="<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
+    
+    setTimeout(()=>{
+      speak("Jangan risau, Cuba lagi ya");
+    },200);
+    
+    // Papar imej flashcard sebagai rujukan pembetulan
+    imageEl.src = "FLASHCARD/" + firstBox + ".png";
+    container.style.display="block";
+
+    // Konfigurasi butang fail untuk muat video menulis
+    document.getElementById("failVideoBtn").onclick = function() {
+      showWritingVideos(firstBox);
+    };
+
+    document.getElementById("failButtons").style.display="flex";
+  }
+}
+
+/* ================= BAHARU: FUNGSI PAPARAN 2 VIDEO MENULIS ================= */
+function showWritingVideos(letter) {
+  // Sembunyikan kawasan flashcard dahulu
+  document.getElementById("gameAreaContainer").style.display = "none";
+  
+  let videoArea = document.getElementById("writingVideoArea");
+  let vCapital = document.getElementById("videoCapital");
+  let vSmall = document.getElementById("videoSmall");
+  
+  document.getElementById("labelCapital").innerText = `Cara Menulis Huruf Besar (${letter})`;
+  document.getElementById("labelSmall").innerText = `Cara Menulis Huruf Kecil (${letter.toLowerCase()})`;
+  
+  // Set sumber video dinamik mengikut huruf diimbas
+  vCapital.src = "CARA MENULIS HURUF/" + letter + ".mp4";
+  vSmall.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
+  
+  // Paparkan kawasan video menulis
+  videoArea.style.display = "flex";
+  
+  // Mainkan video pertama secara automatik
+  vCapital.play().catch(()=>{});
+}
+
+/* ================= BAHARU: FUNGSI MAIN PLAY ABC SONG (MODAL) ================= */
+function playAbcSongVideo() {
+  document.getElementById("gameAreaContainer").style.display = "none";
+  document.getElementById("writingVideoArea").style.display = "none";
+  
+  let modal = document.getElementById("videoModal");
+  modal.innerHTML = `
+    <div style="height:100%; display:flex; flex-direction:column; justify-content:center; align-items:center; padding: 20px; box-sizing: border-box;">
+      <h3 style="color: #a855f7; font-size: 24px; margin: 0 0 15px 0;">🎶 Lagu ABC</h3>
+      <div style="width: 100%; max-width: 360px; height: 220px; background: #000; border-radius: 15px; overflow: hidden; border: 3px solid #a855f7;">
+        <video src="ABC SONG.mp4" controls autoplay playsinline style="width:100%; height:100%; object-fit:contain;"></video>
+      </div>
+      <button onclick="closeVideoModal()" class="btn-back" style="margin-top: 20px; width: 150px;">⬅ Tutup</button>
+    </div>
+  `;
+  modal.style.display = "block";
+}
+
+function closeVideoModal() {
+  document.getElementById("videoModal").innerHTML = "";
+  document.getElementById("videoModal").style.display = "none";
+  // Kembalikan paparan flashcard asal
+  document.getElementById("gameAreaContainer").style.display = "block";
+}
+
+function openBonusLink(url) {
+  window.open(url, "_blank");
+}
+
+function resetGame(){
+  bgMusic.pause();
+  bgMusic.currentTime=0;
+  location.reload();
+}
+
+</script>
+
 </body>
 </html>
