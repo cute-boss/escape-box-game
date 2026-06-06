@@ -164,21 +164,44 @@ function startSecondScanFallback() {
   ).catch(err => console.error(err));
 }
 
-/* ================= RESULT & CHECK ================= */
+/* ================= RESULT & CHECK (DIKEMAS KINI) ================= */
 function check(secondBox) {
   let ok = (firstBox === secondBox);
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
+  document.getElementById("reader").style.display = "none";
+
+  let container = document.getElementById("gameAreaContainer");
+  let imageEl = document.getElementById("flashcardImg");
 
   if (ok) {
     coinSound();
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
-    document.getElementById("result").innerHTML = "<div class='good'>TAHNIAH ANDA BETUL! 🥳</div>";
-    setTimeout(() => { speak("Tahniah anda betul"); }, 200);
+    
+    // 1. Tukar teks kejayaan Melayu baharu
+    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
+    
+    // 2. Tukar sebutan bunyi suara Melayu baharu
+    setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 200);
 
-    if (videoLinks[firstBox]) { window.open(videoLinks[firstBox], "_blank"); }
+    // 3. Paparkan imej flashcard yang sepadan di bawah teks
+    imageEl.src = "FLASHCARD/" + firstBox + ".png";
+    container.style.display = "block";
+
+    // 4. Konfigurasi fungsi tindakan untuk 5 butang panel kejayaan
+    if (videoLinks[firstBox]) {
+      document.getElementById("successVideoBtn").onclick = function() {
+        window.open(videoLinks[firstBox], "_blank");
+      };
+    }
+    document.getElementById("successWriteBtn").onclick = function() {
+      window.location.href = "video.html?type=stroke&letter=" + firstBox;
+    };
+
+    // Paparkan panel utama kejayaan
     document.getElementById("actionButtons").style.display = "flex";
+
   } else {
     failSound();
     document.getElementById("icon").innerHTML = "😢";
@@ -186,11 +209,7 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
-    let container = document.getElementById("gameAreaContainer");
-    let imageEl = document.getElementById("flashcardImg");
-    
-    document.getElementById("reader").style.display = "none";
-    container.classList.add("failed-border");
+    // Paparkan imej flashcard kod asal untuk rujukan pembetulan
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
