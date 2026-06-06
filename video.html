@@ -52,8 +52,9 @@
       videoElement.src = "CARA MENULIS HURUF/" + letter.toUpperCase() + ".mp4";
     }
 
+    // Menggunakan history browser untuk kembali ke state simpanan lepas
     function goBack() {
-      window.location.href = "index.html?letter=" + letter;
+      window.history.back();
     }
   </script>
 </body>
