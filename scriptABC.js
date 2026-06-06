@@ -38,69 +38,123 @@ function startFirstScan() {
   bgMusic.play().catch(e => console.log("Muzik latar disekat", e));
   
   html5QrcodeScanner = new Html5Qrcode("reader");
-  html5QrcodeScanner.start(
-    { 
-      facingMode: "environment" 
-    },
-    { 
-      fps: 10, 
-      qrbox: { width: 250, height: 250 },
-      // Ditambah eksperimental advanced constraints untuk memaksa fungsi fokus telefon aktif
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
+  
+  // Dapatkan senarai kamera peranti terlebih dahulu untuk mengelakkan pemilihan kanta kabur
+  Html5Qrcode.getCameras().then(cameras => {
+    let cameraId = null;
+    
+    if (cameras && cameras.length > 0) {
+      // Cari kamera belakang yang mempunyai nama "back", "rear", atau "environment"
+      let backCamera = cameras.find(cam => cam.label.toLowerCase().includes("back") || cam.label.toLowerCase().includes("rear"));
+      if (backCamera) {
+        cameraId = backCamera.id;
+      } else {
+        // Jika tiada nama khusus, ambil kamera terakhir dalam senarai (biasanya kamera belakang utama)
+        cameraId = cameras[cameras.length - 1].id;
       }
-    },
-    (decodedText) => {
-      firstBox = decodedText.trim().toUpperCase();
-      
-      document.getElementById("btn1").disabled = true;
-      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-      document.getElementById("btn2").disabled = false;
-      document.getElementById("bar").style.width = "50%";
-      document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
-      
-      html5QrcodeScanner.stop().then(() => {
-        document.getElementById("reader").innerHTML = "";
-      });
-    },
-    (errorMessage) => {}
-  ).catch(err => console.log("Gagal mulakan kamera", err));
+    }
+
+    // Konfigurasi tetapan imbasan yang lebih agresif untuk resolusi dan fokus
+    let config = {
+      fps: 15,
+      qrbox: { width: 250, height: 250 },
+      videoConstraints: cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" }
+    };
+
+    html5QrcodeScanner.start(
+      cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" },
+      config,
+      (decodedText) => {
+        firstBox = decodedText.trim().toUpperCase();
+        
+        document.getElementById("btn1").disabled = true;
+        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+        document.getElementById("btn2").disabled = false;
+        
+        // Memastikan progress bar diakses dengan selamat tanpa ralat program terhenti
+        let progressBar = document.getElementById("bar");
+        if (progressBar) { progressBar.style.width = "50%"; }
+        
+        document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
+        
+        html5QrcodeScanner.stop().then(() => {
+          document.getElementById("reader").innerHTML = "";
+        });
+      },
+      (errorMessage) => {}
+    ).catch(err => {
+      console.log("Gagal mulakan kamera terpilih, cuba mod alternatif", err);
+      // Jika gagal, lancarkan semula menggunakan mod asas
+      html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (txt) => {
+        firstBox = txt.trim().toUpperCase();
+        document.getElementById("btn1").disabled = true;
+        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+        document.getElementById("btn2").disabled = false;
+        let pBar = document.getElementById("bar"); if (pBar) { pBar.style.width = "50%"; }
+        document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
+        html5QrcodeScanner.stop().then(() => { document.getElementById("reader").innerHTML = ""; });
+      }, () => {});
+    });
+  }).catch(err => console.log("Gagal mengesan senarai kamera", err));
 }
 
 function startSecondScan() {
   if(html5QrcodeScanner) { html5QrcodeScanner.clear(); }
   
   html5QrcodeScanner = new Html5Qrcode("reader");
-  html5QrcodeScanner.start(
-    { 
-      facingMode: "environment" 
-    },
-    { 
-      fps: 10, 
+  
+  Html5Qrcode.getCameras().then(cameras => {
+    let cameraId = null;
+    if (cameras && cameras.length > 0) {
+      let backCamera = cameras.find(cam => cam.label.toLowerCase().includes("back") || cam.label.toLowerCase().includes("rear"));
+      cameraId = backCamera ? backCamera.id : cameras[cameras.length - 1].id;
+    }
+
+    let config = {
+      fps: 15,
       qrbox: { width: 250, height: 250 },
-      experimentalFeatures: {
-        useBarCodeDetectorIfSupported: true
-      }
-    },
-    (decodedText) => {
-      let secondBox = decodedText.trim().toUpperCase();
-      
-      document.getElementById("btn2").disabled = true;
-      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%";
-      
-      html5QrcodeScanner.stop().then(() => {
-        document.getElementById("reader").innerHTML = "";
+      videoConstraints: cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" }
+    };
+
+    html5QrcodeScanner.start(
+      cameraId ? { deviceId: { exact: cameraId } } : { facingMode: "environment" },
+      config,
+      (decodedText) => {
+        let secondBox = decodedText.trim().toUpperCase();
         
-        sessionStorage.setItem("lastFirstBox", firstBox);
-        sessionStorage.setItem("lastSecondBox", secondBox);
-        sessionStorage.setItem("hasScanned", "true");
+        document.getElementById("btn2").disabled = true;
+        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
         
-        semakKeputusan(firstBox, secondBox);
-      });
-    },
-    (errorMessage) => {}
-  ).catch(err => console.log("Gagal mulakan kamera", err));
+        let progressBar = document.getElementById("bar");
+        if (progressBar) { progressBar.style.width = "100%"; }
+        
+        html5QrcodeScanner.stop().then(() => {
+          document.getElementById("reader").innerHTML = "";
+          
+          sessionStorage.setItem("lastFirstBox", firstBox);
+          sessionStorage.setItem("lastSecondBox", secondBox);
+          sessionStorage.setItem("hasScanned", "true");
+          
+          semakKeputusan(firstBox, secondBox);
+        });
+      },
+      (errorMessage) => {}
+    ).catch(err => {
+      html5QrcodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 250 } }, (txt) => {
+        let secondBox = txt.trim().toUpperCase();
+        document.getElementById("btn2").disabled = true;
+        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+        let pBar = document.getElementById("bar"); if (pBar) { pBar.style.width = "100%"; }
+        html5QrcodeScanner.stop().then(() => {
+          document.getElementById("reader").innerHTML = "";
+          sessionStorage.setItem("lastFirstBox", firstBox);
+          sessionStorage.setItem("lastSecondBox", secondBox);
+          sessionStorage.setItem("hasScanned", "true");
+          semakKeputusan(firstBox, secondBox);
+        });
+      }, () => {});
+    });
+  }).catch(err => console.log("Gagal mengesan senarai kamera", err));
 }
 
 function successSound() {
