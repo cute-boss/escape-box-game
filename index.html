@@ -31,40 +31,22 @@
       <img id="flashcardImg" src="" alt="Flashcard View">
     </div>
 
-    <div id="writingVideoArea" class="writing-video-section">
-      <div class="video-block">
-        <div class="video-label" id="labelCapital">Cara Menulis Huruf Besar</div>
-        <div class="video-wrapper">
-          <video id="videoCapital" controls playsinline loop></video>
-        </div>
-      </div>
-      
-      <div class="video-block">
-        <div class="video-label" id="labelSmall">Cara Menulis Huruf Kecil</div>
-        <div class="video-wrapper">
-          <video id="videoSmall" controls playsinline loop></video>
-        </div>
-      </div>
-    </div>
-
     <div id="actionButtons" class="action-buttons-container">
       <button class="btn-video" id="successVideoBtn">🎥 Video Huruf</button>
       <button class="btn-song" id="successWriteBtn">✍ Cara Menulis</button>
-      <button class="btn-match" onclick="playAbcSongVideo()">🎶 Play ABC Song</button>
+      <button class="btn-match" onclick="goToPlayABC()">🎶 Play ABC Song</button>
       <button style="background: #ff7849; color: white; margin-top: 5px;" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
       <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
 
     <div id="failButtons" class="fail-buttons-container">
       <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
-      <button class="btn-song" onclick="playAbcSongVideo()">🎶 Play ABC</button>
+      <button class="btn-song" onclick="goToPlayABC()">🎶 Play ABC</button>
       <button class="btn-match" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
       <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
 
   </div>
-
-  <div id="videoModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(11,18,32,0.9); z-index:99999;"></div>
 
   <script src="scriptABC.js"></script>
 </body>
