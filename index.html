@@ -16,8 +16,8 @@
 
     <div id="icon"></div>
 
-    <div class="progress" style="width: 100%; background: #e2e8f0; height: 8px; border-radius: 4px; margin-bottom: 12px; overflow: hidden;">
-      <div class="bar" id="bar" style="width: 0%; background: #4caf50; height: 100%; transition: width 0.3s;"></div>
+    <div class="progress">
+      <div class="bar" id="bar"></div>
     </div>
 
     <div id="result">Imbas kod untuk mula permainan</div>
@@ -31,19 +31,19 @@
       <img id="flashcardImg" src="" alt="Flashcard View">
     </div>
 
-    <div id="actionButtons" class="action-buttons-container">
-      <button id="successVideoBtn">🎥 Video Huruf</button>
-      <button id="successWriteBtn">✍ Cara Menulis</button>
-      <button id="successPlayABCBtn" onclick="goToPlayABC()">🎶 Play ABC Song</button>
-      <button id="successMatchBtn" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
-      <button id="successRetryBtn" onclick="resetGame()">🔄 Scan Semula</button>
+    <div id="actionButtons" class="action-buttons-container" style="display: none;">
+      <button class="btn-video" id="successVideoBtn">🎥 Video Huruf</button>
+      <button class="btn-song" id="successWriteBtn">✍ Cara Menulis</button>
+      <button class="btn-match" id="successPlayABCBtn" onclick="goToPlayABC()">🎶 Play ABC Song</button>
+      <button class="btn-match" style="background: #ff7849; color: white; margin-top: 5px;" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
+      <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
 
-    <div id="failButtons" class="fail-buttons-container">
-      <button id="failVideoBtn">🔤 Huruf Besar & Kecil</button>
-      <button id="failPlayABCBtn" onclick="goToPlayABC()">🎶 Play ABC</button>
-      <button id="failMatchBtn" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
-      <button id="failRetryBtn" onclick="resetGame()">🔄 Scan Semula</button>
+    <div id="failButtons" class="fail-buttons-container" style="display: none;">
+      <button class="btn-video" id="failVideoBtn">🎥 Video Huruf</button>
+      <button class="btn-song" id="failPlayABCBtn" onclick="goToPlayABC()">🎶 Play ABC</button>
+      <button class="btn-match" style="background: #ff7849; color: white; margin-top: 5px;" onclick="goToPage('match.html')">🧩 Alphabet Match</button>
+      <button class="btn-retry" onclick="resetGame()">🔄 Scan Semula</button>
     </div>
   </div>
 
