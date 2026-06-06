@@ -28,20 +28,56 @@ const videoLinks = {
   Z: "https://www.starfall.com/h/abcs/letter-z/?mg=k"
 };
 
-let html5QrcodeScanner = null;
+let html5Qrcode = null;
 let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
 bgMusic.loop = true;
 bgMusic.volume = 0.2;
 
-function startFirstScan() {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear().catch(() => {});
+// Fungsi konfigurasi scan utama menggunakan kamera belakang secara automatik
+function startScanning(onSuccessCallback) {
+  // Tutup scan sedia ada jika ada bagi mengelakkan konflik kamera locks
+  if (html5Qrcode) {
+    html5Qrcode.stop().then(() => {
+      proceedToStart(onSuccessCallback);
+    }).catch(() => {
+      proceedToStart(onSuccessCallback);
+    });
+  } else {
+    proceedToStart(onSuccessCallback);
   }
-  bgMusic.play().catch(e => console.log(e));
 
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    firstBox = decodedText.trim().toUpperCase();
+  function proceedToStart(callback) {
+    bgMusic.play().catch(e => console.log("Music blocked:", e));
+    
+    // Gunakan objek tulen Html5Qrcode untuk pintas kebenaran terus
+    html5Qrcode = new Html5Qrcode("reader");
+    
+    const config = { fps: 15, qrbox: 250 };
+    
+    // Meminta kamera belakang (environment) secara paksaan tanpa menu pilihan
+    html5Qrcode.start(
+      { facingMode: "environment" }, 
+      config, 
+      (decodedText) => {
+        // Hentikan kamera sebaik sahaja kod diimbas (cepat & responsif)
+        html5Qrcode.stop().then(() => {
+          callback(decodedText.trim().toUpperCase());
+        }).catch(err => console.log(err));
+      },
+      (errorMessage) => {
+        // Abaikan error imbasan biasa untuk kelancaran stream
+      }
+    ).catch(err => {
+      console.log("Gagal akses kamera belakang:", err);
+      document.getElementById("result").innerText = "Ralat kamera: Sila benarkan akses kamera.";
+    });
+  }
+}
+
+function startFirstScan() {
+  document.getElementById("result").innerText = "Sila imbas Box Pertama...";
+  startScanning((scannedValue) => {
+    firstBox = scannedValue;
 
     document.getElementById("btn1").disabled = true;
     document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
@@ -50,22 +86,14 @@ function startFirstScan() {
     let progressBar = document.getElementById("bar");
     if (progressBar) progressBar.style.width = "50%";
     
-    document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
-
-    html5QrcodeScanner.clear().then(() => {
-      document.getElementById("reader").innerHTML = "";
-    }).catch(() => {});
-  }, (errorMessage) => {});
+    document.getElementById("result").innerText = "Sila klik 'Scan Box Kedua'!";
+  });
 }
 
 function startSecondScan() {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear().catch(() => {});
-  }
-
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    let secondBox = decodedText.trim().toUpperCase();
+  document.getElementById("result").innerText = "Sila imbas Box Kedua...";
+  startScanning((scannedValue) => {
+    let secondBox = scannedValue;
 
     document.getElementById("btn2").disabled = true;
     document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
@@ -73,11 +101,8 @@ function startSecondScan() {
     let progressBar = document.getElementById("bar");
     if (progressBar) progressBar.style.width = "100%";
 
-    html5QrcodeScanner.clear().then(() => {
-      document.getElementById("reader").innerHTML = "";
-      semakKeputusan(firstBox, secondBox);
-    }).catch(() => {});
-  }, (errorMessage) => {});
+    semakKeputusan(firstBox, secondBox);
+  });
 }
 
 function successSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); }
@@ -99,7 +124,6 @@ function semakKeputusan(fBox, sBox) {
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
 
-  // Simpan data sesi untuk fungsi kembali (back)
   sessionStorage.setItem("lastFirstBox", fBox);
   sessionStorage.setItem("lastSecondBox", sBox);
   sessionStorage.setItem("hasScanned", "true");
@@ -114,16 +138,22 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // Dipadankan mengikut ID pada index.html milik anda
-    document.getElementById("successVideoBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      if (targetLink) { window.open(targetLink, "_blank"); }
-    };
+    // Dipadankan mengikut butang ID sedia ada pada index.html anda
+    let successVideoBtn = document.getElementById("successVideoBtn");
+    if (successVideoBtn) {
+      successVideoBtn.onclick = function() {
+        sessionStorage.setItem("prevPage", "index.html");
+        if (targetLink) { window.open(targetLink, "_blank"); }
+      };
+    }
 
-    document.getElementById("successWriteBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      window.location.href = "video.html?type=stroke&letter=" + fBox;
-    };
+    let successWriteBtn = document.getElementById("successWriteBtn");
+    if (successWriteBtn) {
+      successWriteBtn.onclick = function() {
+        sessionStorage.setItem("prevPage", "index.html");
+        window.location.href = "video.html?type=stroke&letter=" + fBox;
+      };
+    }
 
     document.getElementById("actionButtons").style.display = "flex";
     document.getElementById("failButtons").style.display = "none";
@@ -138,10 +168,13 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    document.getElementById("failVideoBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
-    };
+    let failVideoBtn = document.getElementById("failVideoBtn");
+    if (failVideoBtn) {
+      failVideoBtn.onclick = function() {
+        sessionStorage.setItem("prevPage", "index.html");
+        window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
+      };
+    }
 
     document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
@@ -161,14 +194,17 @@ function goToPlayABC() {
 }
 
 function resetGame() {
+  if (html5Qrcode) {
+    html5Qrcode.stop().catch(() => {});
+  }
   bgMusic.pause();
   sessionStorage.removeItem("lastFirstBox");
-  sessionStorage.removeItem("lastSecondBox");
+  sessionStorage.removeItem(() => "lastSecondBox");
   sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html";
 }
 
-// MEMBAIKI WINDOW.ONLOAD AGAR TIDAK BLOCKED KELUARAN KAMERA
+// Menyelaraskan keadaan sesi kembali (back history) dengan selamat tanpa sekatan error
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
