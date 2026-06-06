@@ -17,4 +17,4 @@ Step 3: Go Back Easily ⬅
   Finished watching your video? Just press the "⬅ Kembali" button.
 
 Bonus Fun! 🎈
-  At any time, you can press "Alphabet Match" to play interactive touch-screen games like popping balloons or chasing matching letters!
+  At any time, you can press "Alphabet Match" to play interactive games like popping balloons or chasing matching letters!
