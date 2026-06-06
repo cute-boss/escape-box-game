@@ -31,6 +31,11 @@ const videoLinks = {
 let audioCtx = null;
 let bgStarted = false;
 
+// Sediakan fail Audio awal-awal
+let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
+bgMusic.loop = true;
+bgMusic.volume = 0;
+
 function initAudio() {
   if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
 }
@@ -74,7 +79,6 @@ function getBestVoice() {
   return voices[0];
 }
 
-// FUNGSI UTAMA UNTUK SEBUTAN SUARA + KAWALAN VOLUM LAGU
 function speak(text) {
   speechSynthesis.cancel();
   if (!voices.length) loadVoices();
@@ -84,12 +88,12 @@ function speak(text) {
   if (selectedVoice) { msg.voice = selectedVoice; msg.lang = selectedVoice.lang; } else { msg.lang = "ms-MY"; }
   msg.rate = 0.9; msg.pitch = 1.1;
 
-  // Bila mula bercakap: Perlahankan muzik latar belakang ke 0.02 (hampir senyap)
+  // Perlahankan musik latar belakang semasa bercakap
   msg.onstart = function() {
     bgMusic.volume = 0.02;
   };
 
-  // Bila tamat bercakap: Kembalikan kekuatan muzik latar belakang ke asal (0.15)
+  // Naikkan semula musik latar belakang selepas habis bercakap
   msg.onend = function() {
     fadeInMusic();
   };
@@ -97,21 +101,29 @@ function speak(text) {
   speechSynthesis.speak(msg);
 }
 
-// DIKEMASKINI: Menggunakan fail tempatan anda yang baharu
-let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
-bgMusic.loop = true; bgMusic.volume = 0;
-
 function startMusic() {
+  // Pastikan ia hanya dimainkan sekali sahaja dan dipicu selepas interaksi pengguna
   if (!bgStarted) {
     bgStarted = true;
-    bgMusic.play().then(() => { fadeInMusic(); }).catch(() => {});
+    bgMusic.play().then(() => { 
+      fadeInMusic(); 
+    }).catch((err) => {
+      console.log("Muzik disekat pelayar:", err);
+      bgStarted = false; // Set semula supaya boleh dicuba lagi pada klik seterusnya
+    });
   }
 }
+
 function fadeInMusic() {
   let vol = bgMusic.volume;
   let fade = setInterval(() => {
-    if (vol < 0.15) { vol += 0.02; bgMusic.volume = Math.min(vol, 0.15); } else { clearInterval(fade); }
-  }, 150);
+    if (vol < 0.15) { 
+      vol += 0.02; 
+      bgMusic.volume = Math.min(vol, 0.15); 
+    } else { 
+      clearInterval(fade); 
+    }
+  }, 100);
 }
 
 function setProgress(step) {
@@ -119,7 +131,12 @@ function setProgress(step) {
 }
 
 function startFirstScan() {
-  initAudio(); resumeAudio(); jumpSound(); startMusic(); speak(""); 
+  initAudio(); 
+  resumeAudio(); 
+  jumpSound(); 
+  startMusic(); // Diaktifkan secara rasmi di sini selepas pengguna menekan butang
+  speak(""); 
+  
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
@@ -151,6 +168,7 @@ function startFirstScanFallback() {
 
 function startSecondScan() {
   if (!firstBox) { alert("Scan box pertama dulu!"); return; }
+  startMusic(); // Tambahan perlindungan sekiranya pelayar memerlukan ketukan kedua
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
@@ -194,7 +212,6 @@ function check(secondBox, isRestored = false) {
   if (ok) {
     if (!isRestored) {
       coinSound();
-      // Memberikan laluan masa 400ms selepas bunyi kesan coin selesai sebelum memulakan Text-To-Speech Melayu
       setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
     }
     document.getElementById("icon").innerHTML = "🎉";
@@ -220,7 +237,6 @@ function check(secondBox, isRestored = false) {
   } else {
     if (!isRestored) {
       failSound();
-      // Memberikan laluan masa 400ms selepas bunyi kesan kegagalan selesai sebelum memulakan Text-To-Speech Melayu
       setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
     }
     document.getElementById("icon").innerHTML = "😢";
@@ -267,8 +283,9 @@ window.onload = function() {
     firstBox = sessionStorage.getItem("lastFirstBox");
     let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
-      // Hidupkan semula muzik secara automatik jika datang kembali dari halaman video
-      startMusic();
+      // Pembetulan: Pintu pencetus interaksi diaktifkan semula di sini untuk sambung muzik
+      bgStarted = true;
+      bgMusic.play().then(() => { bgMusic.volume = 0.15; }).catch(() => { bgStarted = false; });
       check(secondBox, true); 
     }
   }
