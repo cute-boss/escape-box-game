@@ -121,6 +121,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
+    // Tetapan fungsi klik untuk butang sukses tanpa mengacau warna kelas
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan tidak ditemui!"); }
@@ -145,7 +146,6 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // DIKEMASKINI: Menghantar jenis video 'bonus_song' (Tajuk baru diuruskan dalam video.html)
     document.getElementById("failVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
