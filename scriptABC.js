@@ -187,20 +187,26 @@ function check(secondBox) {
     document.getElementById("result").innerHTML = "<div class='good'>TAHNIAH ANDA BETUL! 🥳</div>";
     setTimeout(() => { speak("Tahniah anda betul"); }, 200);
 
+    // Buka pautan luaran Starfall dalam tetingkap baharu jika menang
     if (videoLinks[firstBox]) {
-      loadIframeAtLocation(videoLinks[firstBox], false);
+      window.open(videoLinks[firstBox], "_blank");
     }
     document.getElementById("actionButtons").style.display = "flex";
   } else {
     failSound();
-    document.getElementById("icon").innerHTML = "😢"; /* Menggunakan Emoticon Sedih */
+    document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
 
-    /* Memaparkan secara terus fail FLASHCARD tanpa pop-up modal */
-    let flashcardPath = "FLASHCARD/" + firstBox + ".png"; 
-    loadIframeAtLocation(flashcardPath, true);
+    /* REFIX: Memberi laluan fail imej flashcard ke elemen img untuk auto-resize */
+    let container = document.getElementById("gameAreaContainer");
+    let imageEl = document.getElementById("flashcardImg");
+    
+    document.getElementById("reader").style.display = "none";
+    container.classList.add("failed-border");
+    imageEl.src = "FLASHCARD/" + firstBox + ".png";
+    container.style.display = "block";
 
     document.getElementById("failVideoBtn").onclick = function() {
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
@@ -208,30 +214,6 @@ function check(secondBox) {
     document.getElementById("failButtons").style.display = "flex";
   }
 }
-
-function loadIframeAtLocation(url, isFailedView) {
-  document.getElementById("reader").style.display = "none"; 
-  let container = document.getElementById("gameAreaContainer");
-  let frame = document.getElementById("gameIframe");
-  
-  if (isFailedView) container.classList.add("failed-border");
-  else container.classList.remove("failed-border");
-  
-  frame.src = url;
-  container.style.display = "block";
-}
-
-// Mengekalkan keadaan halaman jika kembali dari sub-page
-window.addEventListener("DOMContentLoaded", () => {
-  const urlParams = new URLSearchParams(window.location.search);
-  const activeLetter = urlParams.get('letter');
-  if (activeLetter) {
-    firstBox = activeLetter.toUpperCase();
-    setProgress(2);
-    check("FORCE_FAIL_NAVIGATION_TRIGGER");
-    document.getElementById("bar").style.width = "100%";
-  }
-});
 
 function openBonusLink(url) { window.open(url, "_blank"); }
 function goToPage(page) { window.location.href = firstBox ? page + "?letter=" + firstBox : page; }
