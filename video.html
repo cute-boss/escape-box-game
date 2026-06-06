@@ -87,7 +87,6 @@
       blockTwo.style.display = "none";
       
     } else if (type === 'bonus_song') {
-      // KEMASKINI: Nama fail ditukar kepada ABCs ALPHABET SONG.mp4 (Huruf Besar)
       titleElement.innerText = "🎶 ABCs Alphabet Song";
       titleElement.style.color = "#ec4899";
       labelOne.innerText = "Lagu Belajar Abjad";
@@ -101,9 +100,7 @@
       labelOne.innerText = "Cara Menulis Huruf Besar (" + letter.toUpperCase() + ")";
       videoElement.src = "CARA MENULIS HURUF/" + letter.toUpperCase() + ".mp4";
       
-      labelOne.nextElementSibling.children[0].id = "mainVideo"; 
       secondVideoElement.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
-      
       blockTwo.style.display = "block";
       secondVideoElement.play().catch(function() { console.log("Autoplay blocked for second video"); });
     }
@@ -113,7 +110,8 @@
       if (previousPage && previousPage.includes("match.html")) {
         window.location.href = "match.html?letter=" + letter;
       } else {
-        window.location.href = "index.html";
+        // Balik ke index.html bersama mengekalkan parameter huruf pilihan terakhir
+        window.location.href = "index.html?letter=" + letter;
       }
     }
   </script>
