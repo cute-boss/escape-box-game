@@ -39,7 +39,6 @@ function startFirstScan() {
   }
   bgMusic.play().catch(e => console.log(e));
 
-  // KEKAL KOD ASAL: Membuka fungsi Html5QrcodeScanner tulen tanpa gangguan luaran
   html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
   html5QrcodeScanner.render((decodedText) => {
     firstBox = decodedText.trim().toUpperCase();
@@ -48,7 +47,6 @@ function startFirstScan() {
     document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
     document.getElementById("btn2").disabled = false;
     
-    // Kemas kini bar kemajuan hijau anda di index.html
     let progressBar = document.getElementById("bar");
     if (progressBar) progressBar.style.width = "50%";
     
@@ -101,6 +99,11 @@ function semakKeputusan(fBox, sBox) {
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
 
+  // Simpan data sesi untuk fungsi kembali (back)
+  sessionStorage.setItem("lastFirstBox", fBox);
+  sessionStorage.setItem("lastSecondBox", sBox);
+  sessionStorage.setItem("hasScanned", "true");
+
   if (fBox === sBox) {
     successSound();
     document.getElementById("icon").innerHTML = "🎉";
@@ -111,22 +114,16 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // Padankan dengan ID Butang di fail index.html baharu anda
-    let successVideoBtn = document.getElementById("successVideoBtn");
-    if (successVideoBtn) {
-      successVideoBtn.onclick = function() {
-        sessionStorage.setItem("prevPage", "index.html");
-        if (targetLink) { window.open(targetLink, "_blank"); }
-      };
-    }
+    // Dipadankan mengikut ID pada index.html milik anda
+    document.getElementById("successVideoBtn").onclick = function() {
+      sessionStorage.setItem("prevPage", "index.html");
+      if (targetLink) { window.open(targetLink, "_blank"); }
+    };
 
-    let successWriteBtn = document.getElementById("successWriteBtn");
-    if (successWriteBtn) {
-      successWriteBtn.onclick = function() {
-        sessionStorage.setItem("prevPage", "index.html");
-        window.location.href = "video.html?type=stroke&letter=" + fBox;
-      };
-    }
+    document.getElementById("successWriteBtn").onclick = function() {
+      sessionStorage.setItem("prevPage", "index.html");
+      window.location.href = "video.html?type=stroke&letter=" + fBox;
+    };
 
     document.getElementById("actionButtons").style.display = "flex";
     document.getElementById("failButtons").style.display = "none";
@@ -141,13 +138,10 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    let failVideoBtn = document.getElementById("failVideoBtn");
-    if (failVideoBtn) {
-      failVideoBtn.onclick = function() {
-        sessionStorage.setItem("prevPage", "index.html");
-        window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
-      };
-    }
+    document.getElementById("failVideoBtn").onclick = function() {
+      sessionStorage.setItem("prevPage", "index.html");
+      window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
+    };
 
     document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
@@ -168,5 +162,28 @@ function goToPlayABC() {
 
 function resetGame() {
   bgMusic.pause();
+  sessionStorage.removeItem("lastFirstBox");
+  sessionStorage.removeItem("lastSecondBox");
+  sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html";
 }
+
+// MEMBAIKI WINDOW.ONLOAD AGAR TIDAK BLOCKED KELUARAN KAMERA
+window.onload = function() {
+  let hasScanned = sessionStorage.getItem("hasScanned");
+  if (hasScanned === "true") {
+    firstBox = sessionStorage.getItem("lastFirstBox");
+    let secondBox = sessionStorage.getItem("lastSecondBox");
+    if (firstBox) {
+      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+      document.getElementById("btn1").disabled = true;
+      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+      document.getElementById("btn2").disabled = true;
+      
+      let progressBar = document.getElementById("bar");
+      if (progressBar) progressBar.style.width = "100%";
+      
+      semakKeputusan(firstBox, secondBox);
+    }
+  }
+};
