@@ -210,7 +210,7 @@ function check(secondBox) {
     };
 
     document.getElementById("successWriteBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html"); // Merekod jejak asal
+      sessionStorage.setItem("prevPage", "index.html"); 
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
@@ -224,12 +224,13 @@ function check(secondBox) {
     
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
-    // Kekalkan paparan imej tetap jika scan gagal
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
+    // KEMASKINI: Menghantar jenis video baru 'bonus_song' jika scan gagal
     document.getElementById("failVideoBtn").onclick = function() {
-      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
+      sessionStorage.setItem("prevPage", "index.html");
+      window.location.href = "video.html?type=bonus_song";
     };
 
     document.getElementById("failButtons").style.display = "flex";
@@ -239,12 +240,12 @@ function check(secondBox) {
 function openBonusLink(url) { window.open(url, "_blank"); }
 
 function goToPage(page) { 
-  sessionStorage.setItem("prevPage", "index.html"); // Merekod sebelum berpindah ke match.html
+  sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? page + "?letter=" + firstBox : page; 
 }
 
 function goToPlayABC() { 
-  sessionStorage.setItem("prevPage", "index.html"); // Merekod sebelum berpindah ke video lagu
+  sessionStorage.setItem("prevPage", "index.html"); 
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
 }
 
