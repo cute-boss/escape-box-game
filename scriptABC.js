@@ -60,22 +60,55 @@ function jumpSound() {
   o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 150);
 }
 
+/* ================= PERBAIKAN ENJIN SUARA (SPEECH) ================= */
 let voices = [];
-speechSynthesis.onvoiceschanged = () => { voices = speechSynthesis.getVoices(); };
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+}
+// Pemicu automatik apabila senarai suara berubah dalam sistem peranti
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+loadVoices();
+
 function getBestVoice() {
   if (!voices.length) voices = speechSynthesis.getVoices();
-  return voices.find(v =>
-    v.lang.includes("ms") ||
-    v.lang.includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl"))
-  ) || voices[0];
+  
+  // 1. Cuba cari suara Bahasa Melayu asli (ms atau ms-MY) terlebih dahulu
+  let malayVoice = voices.find(v => v.lang.toLowerCase().includes("ms"));
+  if (malayVoice) return malayVoice;
+  
+  // 2. Jika tiada, cari suara Bahasa Inggeris yang bunyinya lembut/perempuan (selamat untuk sebutan)
+  let engFemaleVoice = voices.find(v => v.lang.toLowerCase().includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl") || v.name.toLowerCase().includes("zira")));
+  if (engFemaleVoice) return engFemaleVoice;
+
+  return voices[0];
 }
+
 function speak(text) {
+  // Batalkan sebarang suara tertunggak untuk mengelakkan sistem tersekat
   speechSynthesis.cancel();
+  
+  // Pastikan suara dimuatkan semula sekiranya peranti lambat membaca senarai
+  if (!voices.length) loadVoices();
+
   let msg = new SpeechSynthesisUtterance(text);
-  msg.voice = getBestVoice();
-  msg.rate = 1; msg.pitch = 1.2; 
+  let selectedVoice = getBestVoice();
+  
+  if (selectedVoice) {
+    msg.voice = selectedVoice;
+    // Set kod bahasa secara manual mengikut suara yang dijumpai
+    msg.lang = selectedVoice.lang; 
+  } else {
+    msg.lang = "ms-MY"; // Pilihan kecemasan lalai (default fallback)
+  }
+  
+  msg.rate = 0.9;  // Kelajuan dikurangkan sedikit supaya sebutan lebih jelas untuk kanak-kanak
+  msg.pitch = 1.1; // Nada suara ditinggikan sedikit agar lebih ceria
+  
   speechSynthesis.speak(msg);
 }
+/* ================================================================= */
 
 let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
 bgMusic.loop = true; bgMusic.volume = 0;
@@ -99,6 +132,9 @@ function setProgress(step) {
 /* ================= SCAN FIRST ================= */
 function startFirstScan() {
   initAudio(); resumeAudio(); jumpSound(); startMusic();
+  // Mengaktifkan enjin suara secara senyap semasa butang pertama ditekan (Trik bypass sekatan peranti)
+  speak(""); 
+  
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
@@ -173,8 +209,6 @@ function check(secondBox) {
 
   let container = document.getElementById("gameAreaContainer");
   let imageEl = document.getElementById("flashcardImg");
-
-  // Dapatkan pautan Starfall berdasarkan kotak pertama yang discan
   let targetLink = videoLinks[firstBox]; 
 
   if (ok) {
@@ -183,17 +217,16 @@ function check(secondBox) {
     document.getElementById("icon").style.color = "#22c55e";
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
-    setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 200);
+    // Memberi sedikit ruang (delay) agar kesan bunyi coin tidak bertindih dengan suara teks
+    setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
 
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    // Jika berjaya, butang membuka pautan luar Video Starfall
     document.getElementById("successVideoBtn").onclick = function() {
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
 
-    // Butang Cara Menulis pergi ke video.html
     document.getElementById("successWriteBtn").onclick = function() {
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
@@ -205,21 +238,16 @@ function check(secondBox) {
     document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
-    setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 200);
+    
+    // Memberi ruang jarak masa agar sebutan suara lancar
+    setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    /* ================= KEMASKINI DI SINI ================= */
-    // PEMBETULAN: Mengubah butang Video Huruf panel gagal untuk membuka Starfall dinamik (sama seperti panel sukses)
     document.getElementById("failVideoBtn").onclick = function() {
-      if (targetLink) { 
-        window.open(targetLink, "_blank"); 
-      } else { 
-        alert("Pautan video tidak dijumpai!"); 
-      }
+      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
-    /* ==================================================== */
 
     document.getElementById("failButtons").style.display = "flex";
   }
