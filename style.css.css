@@ -1,0 +1,240 @@
+/* UI Tema Taman Permainan Ceria & Terang untuk Kanak-Kanak */
+body {
+  margin: 0;
+  font-family: 'Comic Sans MS', 'Chalkboard SE', Arial, sans-serif;
+  background: linear-gradient(135deg, #e0f2fe, #fae8ff); /* Biru langit & Pink lembut */
+  color: #1e293b;
+  text-align: center;
+  padding-top: 40px;
+}
+
+.card {
+  display: inline-block;
+  background: white;
+  padding: 25px;
+  border-radius: 30px;
+  width: 90%;
+  max-width: 380px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08); 
+  border: 4px solid #fed7aa; /* Garisan tepi warna oren pastel */
+}
+
+h2 {
+  color: #0284c7;
+  font-size: 26px;
+  margin-top: 5px;
+}
+
+#lock {
+  font-size: 75px; 
+  margin-bottom: 10px;
+}
+
+#icon {
+  font-size: 90px;
+  margin: 10px;
+}
+
+/* Butang yang bulat dan ceria */
+button {
+  margin-top: 12px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 16px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.2s;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+#btn1 {
+  background: #38bdf8; /* Biru terang */
+  color: white;
+}
+
+#btn2 {
+  background: #f43f5e; /* Merah jambu ceria */
+  color: white;
+}
+
+#btn2:disabled {
+  background: #cbd5e1;
+  color: #94a3b8;
+  box-shadow: none;
+}
+
+/* Style Khusus untuk 3 Butang Menu Selepas Menang */
+.action-buttons-container {
+  display: none; /* Disembunyikan pada awal permainan */
+  flex-direction: column;
+  gap: 5px;
+  margin-top: 15px;
+}
+
+#backBtn {
+  background: #fbbf24; /* Kuning */
+  color: #1e293b;
+}
+
+#abcSongBtn {
+  background: #a855f7; /* Ungu */
+  color: white;
+}
+
+#matchGameBtn {
+  background: #ff7849; /* Oren */
+  color: white;
+}
+
+.progress {
+  width: 85%;
+  height: 16px;
+  background: #f1f5f9;
+  margin: 20px auto;
+  border-radius: 20px;
+  border: 2px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4ade80, #22c55e); 
+  border-radius: 20px;
+  transition: 0.4s;
+}
+
+#result {
+  font-weight: bold; 
+  color: #475569;
+}
+
+#reader {
+  width: 100%;
+  display: none;
+  margin-top: 15px;
+  border-radius: 20px;
+  overflow: hidden;
+  border: 3px dashed #38bdf8;
+}
+
+/* Ruang Iframe di lokasi kamera */
+#gameAreaContainer {
+  width: 100%;
+  height: 280px;
+  display: none;
+  margin-top: 15px;
+  border-radius: 20px;
+  border: 4px solid #4ade80;
+  overflow: hidden;
+  background: white;
+  position: relative;
+}
+
+#gameIframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Kotak bantuan sandaran iframe */
+#iframeFallbackBox {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #f8fafc;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+.fallback-text {
+  font-size: 14px; 
+  color: #475569; 
+  font-weight: bold; 
+  margin-bottom: 10px;
+}
+
+.fallback-btn {
+  background: #22c55e; 
+  color: white; 
+  padding: 10px 25px;
+}
+
+.good {
+  color: #16a34a; 
+  font-size: 24px; 
+  font-weight: bold;
+}
+
+.bad {
+  color: #dc2626; 
+  font-size: 24px; 
+  font-weight: bold;
+}
+
+/* Video Modal container used during failure */
+.modal-overlay {
+  display: none; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(11,18,32,0.9); 
+  z-index: 99999;
+}
+
+/* Dynamic styling for inner elements of failure view */
+.fail-container {
+  height: 100%; 
+  display: flex; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  color: #1e293b; 
+  font-family: Arial, sans-serif; 
+  padding: 20px;
+}
+
+.fail-gif {
+  width: 200px; 
+  max-width: 60%; 
+  border-radius: 20px; 
+  margin-bottom: 10px;
+}
+
+.fail-title {
+  font-size: 28px; 
+  margin: 10px 0; 
+  color: #ef4444;
+}
+
+.fail-desc {
+  font-size: 16px; 
+  margin-bottom: 20px; 
+  color: #475569;
+}
+
+.fail-retry-btn {
+  background: #22c55e; 
+  color: white; 
+  font-size: 18px; 
+  font-weight: bold; 
+  padding: 12px 30px; 
+  border: none; 
+  border-radius: 50px; 
+  cursor: pointer; 
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2); 
+  margin-top: 0;
+}
