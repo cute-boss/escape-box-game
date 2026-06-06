@@ -65,7 +65,6 @@ let voices = [];
 function loadVoices() {
   voices = speechSynthesis.getVoices();
 }
-// Pemicu automatik apabila senarai suara berubah dalam sistem peranti
 if (speechSynthesis.onvoiceschanged !== undefined) {
   speechSynthesis.onvoiceschanged = loadVoices;
 }
@@ -73,42 +72,28 @@ loadVoices();
 
 function getBestVoice() {
   if (!voices.length) voices = speechSynthesis.getVoices();
-  
-  // 1. Cuba cari suara Bahasa Melayu asli (ms atau ms-MY) terlebih dahulu
   let malayVoice = voices.find(v => v.lang.toLowerCase().includes("ms"));
   if (malayVoice) return malayVoice;
-  
-  // 2. Jika tiada, cari suara Bahasa Inggeris yang bunyinya lembut/perempuan (selamat untuk sebutan)
   let engFemaleVoice = voices.find(v => v.lang.toLowerCase().includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl") || v.name.toLowerCase().includes("zira")));
   if (engFemaleVoice) return engFemaleVoice;
-
   return voices[0];
 }
 
 function speak(text) {
-  // Batalkan sebarang suara tertunggak untuk mengelakkan sistem tersekat
   speechSynthesis.cancel();
-  
-  // Pastikan suara dimuatkan semula sekiranya peranti lambat membaca senarai
   if (!voices.length) loadVoices();
-
   let msg = new SpeechSynthesisUtterance(text);
   let selectedVoice = getBestVoice();
-  
   if (selectedVoice) {
     msg.voice = selectedVoice;
-    // Set kod bahasa secara manual mengikut suara yang dijumpai
     msg.lang = selectedVoice.lang; 
   } else {
-    msg.lang = "ms-MY"; // Pilihan kecemasan lalai (default fallback)
+    msg.lang = "ms-MY";
   }
-  
-  msg.rate = 0.9;  // Kelajuan dikurangkan sedikit supaya sebutan lebih jelas untuk kanak-kanak
-  msg.pitch = 1.1; // Nada suara ditinggikan sedikit agar lebih ceria
-  
+  msg.rate = 0.9;
+  msg.pitch = 1.1;
   speechSynthesis.speak(msg);
 }
-/* ================================================================= */
 
 let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
 bgMusic.loop = true; bgMusic.volume = 0;
@@ -132,9 +117,7 @@ function setProgress(step) {
 /* ================= SCAN FIRST ================= */
 function startFirstScan() {
   initAudio(); resumeAudio(); jumpSound(); startMusic();
-  // Mengaktifkan enjin suara secara senyap semasa butang pertama ditekan (Trik bypass sekatan peranti)
   speak(""); 
-  
   document.getElementById("gameAreaContainer").style.display = "none";
   document.getElementById("reader").style.display = "block";
   let scanner = new Html5Qrcode("reader");
@@ -217,7 +200,6 @@ function check(secondBox) {
     document.getElementById("icon").style.color = "#22c55e";
     document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
-    // Memberi sedikit ruang (delay) agar kesan bunyi coin tidak bertindih dengan suara teks
     setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
 
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
@@ -228,6 +210,7 @@ function check(secondBox) {
     };
 
     document.getElementById("successWriteBtn").onclick = function() {
+      sessionStorage.setItem("prevPage", "index.html"); // Merekod jejak asal
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
@@ -239,10 +222,9 @@ function check(secondBox) {
     document.getElementById("icon").style.color = "#dc2626";
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     
-    // Memberi ruang jarak masa agar sebutan suara lancar
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
-    // KEMASKINI: Menukar imej kepada fail ALPHABET LETTERS.png secara tetap jika gagal scan
+    // Kekalkan paparan imej tetap jika scan gagal
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
@@ -255,6 +237,15 @@ function check(secondBox) {
 }
 
 function openBonusLink(url) { window.open(url, "_blank"); }
-function goToPage(page) { window.location.href = firstBox ? page + "?letter=" + firstBox : page; }
-function goToPlayABC() { window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; }
+
+function goToPage(page) { 
+  sessionStorage.setItem("prevPage", "index.html"); // Merekod sebelum berpindah ke match.html
+  window.location.href = firstBox ? page + "?letter=" + firstBox : page; 
+}
+
+function goToPlayABC() { 
+  sessionStorage.setItem("prevPage", "index.html"); // Merekod sebelum berpindah ke video lagu
+  window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
+}
+
 function resetGame() { bgMusic.pause(); window.location.href = "index.html"; }
