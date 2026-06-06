@@ -20,7 +20,5 @@ Don't worry! A special bonus button appears so you can sing along to a fun "ABCs
 Step 3: Go Back Easily ⬅
 Finished watching your video? Just press the "⬅ Kembali" button.
 
-The game has a smart memory! It will take you right back to your matching buttons so you don't lose your place.
-
 Bonus Fun! 🎈
 At any time, you can press "Alphabet Match" to play interactive touch-screen games like popping balloons or chasing matching letters!
