@@ -18,11 +18,11 @@ body {
   border: 4px solid #fed7aa; 
 }
 
-/* --- LOGO GERGASI DENGAN MARGIN RAPAT --- */
+/* --- LOGO GERGASI DENGAN MARGIN RAPAT LAHIR --- */
 .logo-large-box {
   width: 100%;
   height: 210px; 
-  margin: 5px auto 0px auto; /* Mengurangkan margin bawah ke 0px untuk rapatkan kandungan */
+  margin: 5px auto 0px auto; /* Potong habis margin bawah */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,18 +36,17 @@ body {
 
 #icon { 
   font-size: 80px; 
-  margin: 5px; /* Dikurangkan sedikit untuk jimat ruang */
+  margin: 0px auto 5px auto; /* BUANG MARGIN ATAS UNTUK RAPATKAN */
 }
 
 #result {
   font-weight: bold; 
   color: #475569; 
-  margin-bottom: 12px;
+  margin: 0px auto 12px auto; /* Rapatkan tulisan ke atas */
   font-size: 18px;
 }
 
 button {
-  margin-top: 12px;
   padding: 12px 20px;
   border: none;
   border-radius: 50px;
@@ -62,6 +61,7 @@ button:active {
   transform: scale(0.95);
 }
 
+#btn1, #btn2 { margin-top: 12px; }
 #btn1 { background: #38bdf8; color: white; }
 #btn2 { background: #f43f5e; color: white; }
 #btn2:disabled {
@@ -78,26 +78,26 @@ button:active {
   margin-top: 15px;
 }
 
-/* --- PENYELARASAN WARNA GLOBAL --- */
+/* --- WARNA SERAGAM SECARA GLOBAL --- */
 .btn-back, #backBtn, .btn-return-home { 
   background: #64748b !important; 
   color: white !important; 
-} /* Kelabu untuk semua butang Kembali */
+} 
 
 .btn-retry, .btn-reset-home { 
   background: #0284c7 !important; 
   color: white !important; 
-} /* Biru untuk semua butang Scan Semula */
+} 
 
-#abcSongBtn, .btn-song { background: #a855f7; color: white; }
-#matchGameBtn, .btn-match { background: #ff7849; color: white; }
-.btn-video { background: #06b6d4; color: white; }
+#abcSongBtn, .btn-song { background: #a855f7; color: white; margin-top: 5px; }
+#matchGameBtn, .btn-match { background: #ff7849; color: white; margin-top: 5px; }
+.btn-video { background: #06b6d4; color: white; margin-top: 5px; }
 
 .progress {
   width: 85%;
   height: 16px;
   background: #f1f5f9;
-  margin: 15px auto; /* Dikurangkan untuk merapatkan ruang */
+  margin: 0px auto 10px auto; /* Dipotong rapat ke bahagian logo */
   border-radius: 20px;
   border: 2px solid #e2e8f0;
   overflow: hidden;
@@ -120,21 +120,17 @@ button:active {
   border: 3px dashed #38bdf8;
 }
 
-/* --- KOTAK NIKMAT FIT FLASHCARD & KUNCI GERAKAN --- */
+/* --- KOTAK FLASHCARD: GARISAN MERAH DIHAPUSKAN --- */
 #gameAreaContainer {
   width: 100%;
   height: 260px; 
   display: none;
   margin-top: 15px;
   border-radius: 20px;
-  border: 4px solid #4ade80;
+  border: 4px solid #cbd5e1; /* Menggunakan garisan kelabu lembut neutral sahaja (Tiada merah) */
   overflow: hidden;
   background: white;
   box-sizing: border-box;
-}
-
-#gameAreaContainer.failed-border {
-  border-color: #f43f5e;
 }
 
 #flashcardImg {
@@ -142,11 +138,47 @@ button:active {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  object-fit: contain; /* Muat sempurna di dalam kotak tanpa terpotong */
+  object-fit: contain; 
   background-color: #ffffff;
-  pointer-events: none; /* Menghalang imej daripada boleh digerakkan atau di-drag */
+  pointer-events: none; 
   -webkit-user-drag: none;
   user-select: none;
+}
+
+/* --- REKA BENTUK GRID INTERAKTIF UNTUK BUTTON GAME --- */
+.game-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr); /* Tetapan pembahagi grid asas */
+  gap: 8px;
+  margin: 15px 0;
+}
+
+/* Baris Pertama: 3 Butang Sebaris */
+.game-grid-layout button:nth-child(1),
+.game-grid-layout button:nth-child(2),
+.game-grid-layout button:nth-child(3) {
+  grid-column: span 2; 
+  font-size: 13px;
+  padding: 10px 5px;
+  border-radius: 15px;
+}
+
+/* Baris Kedua: 2 Butang Sebaris */
+.game-grid-layout button:nth-child(4),
+.game-grid-layout button:nth-child(5) {
+  grid-column: span 3;
+  font-size: 14px;
+  padding: 12px 10px;
+  border-radius: 18px;
+}
+
+.navigation-divider {
+  margin-top: 20px;
+  border-top: 2px dashed #e2e8f0;
+  padding-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .good { color: #16a34a; font-size: 24px; font-weight: bold; }
