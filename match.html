@@ -39,14 +39,14 @@
   </div>
 
   <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    let letter = urlParams.get('letter') || 'A';
+
     function launchGame(url) { window.open(url, "_blank"); }
     
     function goBackHistory() {
-      if (window.history.length > 1) {
-        window.history.back();
-      } else {
-        window.location.href = "index.html";
-      }
+      // Mengarahkan pulang terus dengan selamat ke index.html
+      window.location.href = "index.html";
     }
     
     function goHome() { window.location.href = "index.html"; }
