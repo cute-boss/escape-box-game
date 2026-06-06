@@ -7,12 +7,19 @@
   <link rel="stylesheet" href="styleABC.css">
   <style>
     h2 { color: #0284c7; font-size: 24px; margin: 0px 0 10px 0; }
-    .btn-g1 { background: #38bdf8; color: white; }
-    .btn-g2 { background: #f43f5e; color: white; }
-    .btn-g3 { background: #a855f7; color: white; }
-    .btn-g4 { background: #34d399; color: white; }
-    .btn-g5 { background: #fbbf24; color: #1e293b; }
-    .btn-back-layout { width: 100%; margin-top: 5px; }
+    /* Memastikan susunan susun atur grid kemas pada skrin peranti */
+    .game-grid-layout {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 15px 0;
+    }
+    .navigation-divider {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
@@ -25,16 +32,16 @@
     <h2>🧩 Pilih Game</h2>
 
     <div class="game-grid-layout">
-      <button class="btn-g1" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1</button>
-      <button class="btn-g2" onclick="launchGame('https://wordwall.net/resource/98486528/uppercase-lowercase-alphabet-match')">✈ Game 2</button>
-      <button class="btn-g3" onclick=\"launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')\">🛩 Game 3</button>
-      <button class="btn-g4" onclick="launchGame('https://wordwall.net/resource/23644070/letter-match/letter-match')">🎈 Game 4: Balloon</button>
-      <button class="btn-g5" onclick="launchGame('https://wordwall.net/resource/66703372/matching-uppercase-and-lowercase-letters')">🐱 Game 5: Chase</button>
+      <button style="background: #ff5722; color: white;" onclick="launchGame('https://wordwall.net/resource/74706396/uppercase-lowercase-alphabet-match')">🎯 Game 1</button>
+      <button style="background: #e91e63; color: white;" onclick="launchGame('https://wordwall.net/resource/98486528/uppercase-lowercase-alphabet-match')">✈ Game 2</button>
+      <button style="background: #9c27b0; color: white;" onclick="launchGame('https://wordwall.net/resource/74705618/uppercase-lowercase-alphabet-match')">🛩 Game 3</button>
+      <button style="background: #00bcd4; color: white;" onclick="launchGame('https://wordwall.net/resource/23644070/letter-match/letter-match')">🎈 Game 4</button>
+      <button style="background: #4caf50; color: white;" onclick="launchGame('https://wordwall.net/resource/66703372/matching-uppercase-and-lowercase-letters')">🐱 Game 5</button>
     </div>
 
     <div class="navigation-divider">
-      <button class="btn-back btn-back-layout" onclick="goBackHistory()">⬅ Kembali</button>
-      <button class="btn-reset-home" onclick="goHome()">🔄 Scan Semula</button>
+      <button style="background: #ff9800; color: white;" onclick="goBackHistory()">⬅ Kembali</button>
+      <button style="background: #607d8b; color: white;" onclick="goHome()">🔄 Scan Semula</button>
     </div>
   </div>
 
@@ -42,32 +49,32 @@
     const urlParams = new URLSearchParams(window.location.search);
     let letter = urlParams.get('letter') || '';
 
-    // DIKEMASKINI: Sistem Audio untuk halaman match.html
+    // KEMASKINI: Integrasi Audio latar belakang untuk match.html
     let matchBgMusic = new Audio("LAGU/BG SOUND.mpeg");
     matchBgMusic.loop = true;
     matchBgMusic.volume = 0.15;
 
-    // Mainkan muzik sebaik sahaja halaman dibuka
+    // Menjalankan audio sejurus halaman dibuka
     window.onload = function() {
       matchBgMusic.play().catch(function(err) {
-        console.log("Muzik match disekat, menunggu klik pengguna:", err);
+        console.log("Muzik latar belakang disekat pelayar web:", err);
       });
     };
 
     function launchGame(url) {
-      // Pastikan muzik diperlahankan atau dimatikan jika berpindah ke pautan luar game
+      // Perlahankan volume audio asal jika pengguna sedang beralih ke tetingkap game luar
       matchBgMusic.volume = 0.05; 
       window.open(url, '_blank');
     }
 
     function goBackHistory() {
-      matchBgMusic.pause(); // Hentikan lagu
+      matchBgMusic.pause();
       let previousPage = sessionStorage.getItem("prevPage") || "index.html";
       window.location.href = previousPage;
     }
 
     function goHome() {
-      matchBgMusic.pause(); // Hentikan lagu
+      matchBgMusic.pause();
       sessionStorage.removeItem("lastFirstBox");
       sessionStorage.removeItem("lastSecondBox");
       sessionStorage.removeItem("hasScanned");
