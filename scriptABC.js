@@ -39,7 +39,7 @@ function startFirstScan() {
   }
   bgMusic.play().catch(e => console.log(e));
 
-  // KEKAL: Tetapan asal kamera anda tanpa sebarang modifikasi fokus
+  // KEKAL KOD ASAL: Membuka fungsi Html5QrcodeScanner tulen tanpa gangguan luaran
   html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
   html5QrcodeScanner.render((decodedText) => {
     firstBox = decodedText.trim().toUpperCase();
@@ -48,7 +48,7 @@ function startFirstScan() {
     document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
     document.getElementById("btn2").disabled = false;
     
-    // BAR PROGRESS: Mengisi ke 50% apabila Box Pertama berjaya dikesan
+    // Kemas kini bar kemajuan hijau anda di index.html
     let progressBar = document.getElementById("bar");
     if (progressBar) progressBar.style.width = "50%";
     
@@ -65,7 +65,6 @@ function startSecondScan() {
     html5QrcodeScanner.clear().catch(() => {});
   }
 
-  // KEKAL: Tetapan asal kamera anda untuk imbasan kedua
   html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
   html5QrcodeScanner.render((decodedText) => {
     let secondBox = decodedText.trim().toUpperCase();
@@ -73,18 +72,11 @@ function startSecondScan() {
     document.getElementById("btn2").disabled = true;
     document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
     
-    // BAR PROGRESS: Mengisi penuh ke 100% apabila imbasan selesai
     let progressBar = document.getElementById("bar");
     if (progressBar) progressBar.style.width = "100%";
 
     html5QrcodeScanner.clear().then(() => {
       document.getElementById("reader").innerHTML = "";
-
-      // SIMPAN MEMORI: Untuk sokongan butang Kembali/Back kekal berfungsi
-      sessionStorage.setItem("lastFirstBox", firstBox);
-      sessionStorage.setItem("lastSecondBox", secondBox);
-      sessionStorage.setItem("hasScanned", "true");
-
       semakKeputusan(firstBox, secondBox);
     }).catch(() => {});
   }, (errorMessage) => {});
@@ -119,7 +111,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // PANDUAN PAUTAN DINAMIK: Menggunakan id sepadan mengikut index.html asal anda
+    // Padankan dengan ID Butang di fail index.html baharu anda
     let successVideoBtn = document.getElementById("successVideoBtn");
     if (successVideoBtn) {
       successVideoBtn.onclick = function() {
@@ -146,11 +138,9 @@ function semakKeputusan(fBox, sBox) {
 
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
     
-    // KEKAL: Memaparkan fail gambar latar belakang kegemaran anda
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // KEMASKINI LAGU BONUS APABILA IMBAHAN SALAH
     let failVideoBtn = document.getElementById("failVideoBtn");
     if (failVideoBtn) {
       failVideoBtn.onclick = function() {
@@ -178,30 +168,5 @@ function goToPlayABC() {
 
 function resetGame() {
   bgMusic.pause();
-  sessionStorage.removeItem("lastFirstBox");
-  sessionStorage.removeItem("lastSecondBox");
-  sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html";
 }
-
-// FUNGSI MEMORI: Menjamin data tidak hilang apabila butang back diklik dari halaman video/game
-window.onload = function() {
-  let hasScanned = sessionStorage.getItem("hasScanned");
-  if (hasScanned === "true") {
-    firstBox = sessionStorage.getItem("lastFirstBox");
-    let secondBox = sessionStorage.getItem("lastSecondBox");
-    if (firstBox) {
-      bgMusic.play().catch(() => {});
-      
-      let progressBar = document.getElementById("bar");
-      if (progressBar) progressBar.style.width = "100%";
-      
-      let btn1 = document.getElementById("btn1");
-      let btn2 = document.getElementById("btn2");
-      if(btn1) btn1.innerText = "Box Pertama: " + firstBox;
-      if(btn2) btn2.innerText = "Box Kedua: " + secondBox;
-      
-      semakKeputusan(firstBox, secondBox);
-    }
-  }
-};
