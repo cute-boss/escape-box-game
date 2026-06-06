@@ -74,18 +74,33 @@ function getBestVoice() {
   return voices[0];
 }
 
+// FUNGSI UTAMA UNTUK SEBUTAN SUARA + KAWALAN VOLUM LAGU
 function speak(text) {
   speechSynthesis.cancel();
   if (!voices.length) loadVoices();
+  
   let msg = new SpeechSynthesisUtterance(text);
   let selectedVoice = getBestVoice();
   if (selectedVoice) { msg.voice = selectedVoice; msg.lang = selectedVoice.lang; } else { msg.lang = "ms-MY"; }
   msg.rate = 0.9; msg.pitch = 1.1;
+
+  // Bila mula bercakap: Perlahankan muzik latar belakang ke 0.02 (hampir senyap)
+  msg.onstart = function() {
+    bgMusic.volume = 0.02;
+  };
+
+  // Bila tamat bercakap: Kembalikan kekuatan muzik latar belakang ke asal (0.15)
+  msg.onend = function() {
+    fadeInMusic();
+  };
+
   speechSynthesis.speak(msg);
 }
 
-let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
+// DIKEMASKINI: Menggunakan fail tempatan anda yang baharu
+let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
 bgMusic.loop = true; bgMusic.volume = 0;
+
 function startMusic() {
   if (!bgStarted) {
     bgStarted = true;
@@ -93,10 +108,10 @@ function startMusic() {
   }
 }
 function fadeInMusic() {
-  let vol = 0;
+  let vol = bgMusic.volume;
   let fade = setInterval(() => {
-    if (vol < 0.15) { vol += 0.01; bgMusic.volume = vol; } else { clearInterval(fade); }
-  }, 200);
+    if (vol < 0.15) { vol += 0.02; bgMusic.volume = Math.min(vol, 0.15); } else { clearInterval(fade); }
+  }, 150);
 }
 
 function setProgress(step) {
@@ -164,7 +179,6 @@ function startSecondScanFallback() {
 function check(secondBox, isRestored = false) {
   let ok = (firstBox === secondBox);
   
-  // Sorokkan butang scanner utama
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
   document.getElementById("reader").style.display = "none";
@@ -173,7 +187,6 @@ function check(secondBox, isRestored = false) {
   let imageEl = document.getElementById("flashcardImg");
   let targetLink = videoLinks[firstBox]; 
 
-  // Simpan keadaan terkini ke sessionStorage supaya butang kembali boleh baca semula
   sessionStorage.setItem("lastFirstBox", firstBox);
   sessionStorage.setItem("lastSecondBox", secondBox);
   sessionStorage.setItem("hasScanned", "true");
@@ -181,6 +194,7 @@ function check(secondBox, isRestored = false) {
   if (ok) {
     if (!isRestored) {
       coinSound();
+      // Memberikan laluan masa 400ms selepas bunyi kesan coin selesai sebelum memulakan Text-To-Speech Melayu
       setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
     }
     document.getElementById("icon").innerHTML = "🎉";
@@ -206,6 +220,7 @@ function check(secondBox, isRestored = false) {
   } else {
     if (!isRestored) {
       failSound();
+      // Memberikan laluan masa 400ms selepas bunyi kesan kegagalan selesai sebelum memulakan Text-To-Speech Melayu
       setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
     }
     document.getElementById("icon").innerHTML = "😢";
@@ -246,14 +261,15 @@ function resetGame() {
   window.location.href = "index.html"; 
 }
 
-// SEMAK REKOD LAMA BILA KEMBALI KE INDEX.HTML
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
     firstBox = sessionStorage.getItem("lastFirstBox");
     let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
-      check(secondBox, true); // Aktifkan semula rupa bentuk keputusan lepas tanpa ulang bunyi bunyian
+      // Hidupkan semula muzik secara automatik jika datang kembali dari halaman video
+      startMusic();
+      check(secondBox, true); 
     }
   }
 };
