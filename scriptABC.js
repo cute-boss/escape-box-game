@@ -239,7 +239,7 @@ function goToPage(page) {
 
 function goToPlayABC() { 
   sessionStorage.setItem("prevPage", "index.html"); 
-  window.location.href = \"video.html?type=song\";
+  window.location.href = "video.html?type=song";
 }
 
 function resetGame() { 
