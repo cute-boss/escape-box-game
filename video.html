@@ -35,6 +35,7 @@
       background: #000;
     }
     video { width: 100%; height: 100%; object-fit: contain; }
+    .btn-return-home { width: 100%; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -86,10 +87,9 @@
       blockTwo.style.display = "none";
       
     } else if (type === 'bonus_song') {
-      // KEMASKINI: Penukaran nama tajuk mengikut permintaan anda bagi video belajar huruf besar & kecil
-      titleElement.innerText = "🔤 Belajar Huruf Besar & Kecil";
-      titleElement.style.color = "#ec4899"; 
-      labelOne.innerText = "Mengenal Huruf Besar & Kecil";
+      titleElement.innerText = "🎶 ABCs Alphabet Song";
+      titleElement.style.color = "#ec4899";
+      labelOne.innerText = "Lagu Belajar Abjad";
       videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
       
@@ -104,11 +104,11 @@
       blockTwo.style.display = "block";
     }
 
-    // Memaksa pelayar web memainkan video secepat mungkin sebaik halaman selesai dimuatkan
+    // Menguatkan jaminan autoplay berjalan lancar melalui kod skrip tambahan
     window.onload = function() {
-      videoElement.play().catch(function(e) { console.log("Main video autoplay disekat", e); });
+      videoElement.play().catch(function(e) { console.log("Main video autoplay blocked", e); });
       if (blockTwo.style.display === "block") {
-        secondVideoElement.play().catch(function(e) { console.log("Second video autoplay disekat", e); });
+        secondVideoElement.play().catch(function(e) { console.log("Second video autoplay blocked", e); });
       }
     };
 
