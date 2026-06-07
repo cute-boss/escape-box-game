@@ -93,7 +93,17 @@
       videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
       
-    } else {
+    } else if (type === 'letter_video') {
+      let upper = letter.toUpperCase();
+      let lower = letter.toLowerCase();
+      
+      titleElement.innerText = "🎥 Video Huruf " + upper + lower;
+      titleElement.style.color = "#e91e63"; 
+      labelOne.innerText = "Video Nyanyian & Bunyi Huruf";
+      videoElement.src = "LAGU/" + upper + lower + ".mp4"; 
+      blockTwo.style.display = "none"; 
+      
+    }else {
       titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + letter.toLowerCase() + ")";
       titleElement.style.color = "#06b6d4";
       
