@@ -174,7 +174,6 @@ function check(secondBox, isRestored = false) {
 
   let container = document.getElementById("gameAreaContainer");
   let imageEl = document.getElementById("flashcardImg");
-  let targetLink = videoLinks[firstBox]; 
 
   sessionStorage.setItem("lastFirstBox", firstBox);
   sessionStorage.setItem("lastSecondBox", secondBox);
