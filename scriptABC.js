@@ -28,159 +28,60 @@ const videoLinks = {
   Z: "https://www.starfall.com/h/abcs/letter-z/?mg=k"
 };
 
-// --- SISTEM AUDIO & INSTRUMEN ---
-let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
-bgMusic.loop = true;
-bgMusic.volume = 0.2;
+// Menguruskan Audio Kesan Bunyi (Sound Effects)
+function successSound() {
+  let audio = new Audio("LAGU/SUCCESS SOUND.mp3");
+  audio.play().catch(e => console.log("Audio play blocked", e));
+}
 
-function startMusic() { bgMusic.play().catch(e => console.log(e)); }
-function coinSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); } // Menggantikan kesan bunyi coin/success
-function jumpSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); }
-function successSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); }
-function failSound() { let snd = new Audio("SOUND/FAIL.mp3"); snd.play().catch(() => {}); }
+function failSound() {
+  let audio = new Audio("LAGU/FAIL SOUND.mp3");
+  audio.play().catch(e => console.log("Audio play blocked", e));
+}
 
+// Fungsi Sebutan Suara Melayu (Text-to-Speech)
 function speak(text) {
   if ('speechSynthesis' in window) {
-    var msg = new SpeechSynthesisUtterance(text);
-    msg.lang = 'ms-MY';
-    window.speechSynthesis.speak(msg);
+    window.speechSynthesis.cancel(); // Hentikan suara sedia ada jika ada
+    let utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'ms-MY'; // Set loghat Bahasa Melayu tetap
+    utterance.rate = 0.9;     // Kelajuan natural
+    window.speechSynthesis.speak(utterance);
   }
 }
 
-// Menguruskan bar kemajuan kemajuan secara dinamik berdasarkan keperluan kod anda
-function setProgress(step) {
-  let progressBar = document.getElementById("bar");
-  if (progressBar) {
-    if (step === 1) progressBar.style.width = "50%";
-    if (step === 2) progressBar.style.width = "100%";
-  }
-}
-
-/* ================= SCAN FIRST ================= */
-function startFirstScan() {
-  startMusic();
-  speak(""); 
-  
-  document.getElementById("gameAreaContainer").style.display = "none";
-  document.getElementById("reader").style.display = "block";
-  let scanner = new Html5Qrcode("reader");
-  
-  scanner.start(
-    { facingMode: { exact: "environment" } },
-    {
-      fps: 15, qrbox: 280,
-      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
-    (text) => {
-      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
-      scanner.stop().then(() => {
-        coinSound(); 
-        setProgress(1);
-        document.getElementById("btn1").disabled = true;
-        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-        document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
-        document.getElementById("btn2").disabled = false;
-      }).catch(err => console.error(err));
-    }
-  ).catch(err => { startFirstScanFallback(); });
-}
-
-function startFirstScanFallback() {
-  let scanner = new Html5Qrcode("reader");
-  scanner.start(
-    { facingMode: "environment" },
-    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
-    (text) => {
-      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
-      scanner.stop().then(() => {
-        coinSound(); 
-        setProgress(1);
-        document.getElementById("btn1").disabled = true;
-        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-        document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
-        document.getElementById("btn2").disabled = false;
-      }).catch(err => console.error(err));
-    }
-  ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
-}
-
-/* ================= SCAN SECOND ================= */
-function startSecondScan() {
-  if (!firstBox) { alert("Scan box pertama dulu!"); return; }
-  document.getElementById("gameAreaContainer").style.display = "none";
-  document.getElementById("reader").style.display = "block";
-  let scanner = new Html5Qrcode("reader");
-
-  scanner.start(
-    { facingMode: { exact: "environment" } },
-    {
-      fps: 15, qrbox: 280,
-      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-    },
-    (text) => {
-      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
-      scanner.stop().then(() => {
-        setProgress(2); 
-        document.getElementById("btn2").disabled = true;
-        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-        semakKeputusan(firstBox, secondBox);
-      }).catch(err => console.error(err));
-    }
-  ).catch(err => { startSecondScanFallback(); });
-}
-
-function startSecondScanFallback() {
-  let scanner = new Html5Qrcode("reader");
-  scanner.start(
-    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
-    (text) => {
-      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
-      scanner.stop().then(() => {
-        setProgress(2); 
-        document.getElementById("btn2").disabled = true;
-        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-        semakKeputusan(firstBox, secondBox);
-      }).catch(err => console.error(err));
-    }
-  ).catch(err => console.error(err));
-}
-
-/* ================= PROSES SEMAKAN & UI ================= */
-function semakKeputusan(fBox, sBox) {
+// Fungsi Semakan Padanan Kod (Match Check)
+function checkMatch(fBox, sBox) {
   let imageEl = document.getElementById("flashcardImg");
   let container = document.getElementById("gameAreaContainer");
-  let targetLink = videoLinks[fBox];
 
-  document.getElementById("btn1").style.display = "none";
-  document.getElementById("btn2").style.display = "none";
-  document.getElementById("reader").style.display = "none"; // Tutup ruangan kamera setelah selesai imbasan
-
-  sessionStorage.setItem("lastFirstBox", fBox);
-  sessionStorage.setItem("lastSecondBox", sBox);
-  sessionStorage.setItem("hasScanned", "true");
-
-  if (fBox === sBox) {
+  if (fBox.toUpperCase() === sBox.toUpperCase()) {
     successSound();
     document.getElementById("icon").innerHTML = "🎉";
-    document.getElementById("icon").style.color = "#16a34a";
-    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Padanan Betul!</div>";
+    document.getElementById("icon").style.color = "#22c55e";
+    
+    // Mesej Berjaya yang Tepat
+    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Padanan anda betul!</div>";
+    
+    // Suara Melayu Berjaya
+    setTimeout(() => { speak("Tahniah! Padanan anda betul!"); }, 400);
 
-    setTimeout(() => { speak("Tahniah! Padanan Betul"); }, 400);
-
-    imageEl.src = "FLASHCARD/" + fBox + ".png";
+    // Paparkan Gambar Flashcard
+    imageEl.src = "FLASHCARD/" + fBox.toUpperCase() + ".png";
     container.style.display = "block";
 
-    // Tetapkan fungsi klik untuk ID butang success mengikut index.html terkini
+    // Konfigurasi Butang Berjaya
+    let targetLink = videoLinks[fBox.toUpperCase()];
     document.getElementById("successVideoBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      if (targetLink) { window.open(targetLink, "_blank"); }
+      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
 
     document.getElementById("successWriteBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      window.location.href = "video.html?type=stroke&letter=" + fBox;
+      sessionStorage.setItem(\"prevPage\", \"index.html\");
+      window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
+    // Urus Paparan Blok Butang
     document.getElementById("actionButtons").style.display = "flex";
     document.getElementById("failButtons").style.display = "none";
 
@@ -188,43 +89,78 @@ function semakKeputusan(fBox, sBox) {
     failSound();
     document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
-    document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
-
-    setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
     
+    // Mesej Gagal yang Tepat
+    document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
+    
+    // Suara Melayu Gagal
+    setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
+
+    // Tukar gambar kepada carta abjad tetap jika salah
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // Tetapkan fungsi klik untuk ID butang fail mengikut index.html terkini
+    // Konfigurasi Butang Gagal (Memastikan firstBox digunakan dengan betul)
     document.getElementById("failVideoBtn").onclick = function() {
-      sessionStorage.setItem("prevPage", "index.html");
-      window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
+      sessionStorage.setItem(\"prevPage\", \"index.html\");
+      window.location.href = "video.html?type=bonus_song&letter=" + (firstBox || "A");
     };
 
+    // Urus Paparan Blok Butang
     document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
   }
 }
 
 function goToPage(page) {
-  sessionStorage.setItem("prevPage", "index.html");
+  sessionStorage.setItem(\"prevPage\", \"index.html\");
   window.location.href = firstBox ? page + "?letter=" + firstBox : page;
 }
 
 function goToPlayABC() {
-  sessionStorage.setItem("prevPage", "index.html");
+  sessionStorage.setItem(\"prevPage\", \"index.html\");
   window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song";
 }
 
 function resetGame() {
-  bgMusic.pause();
   sessionStorage.removeItem("lastFirstBox");
   sessionStorage.removeItem("lastSecondBox");
   sessionStorage.removeItem("hasScanned");
   window.location.href = "index.html";
 }
 
-/* ================= RESTORE STATUS SCANNING ================= */
+// Logik Imbasan Kamera & Membaca Kod QR/Bar
+function startFirstScan() {
+  document.getElementById("reader").style.display = "block";
+  const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+  html5QrcodeScanner.render((decodedText) => {
+    firstBox = decodedText.trim();
+    sessionStorage.setItem("lastFirstBox", firstBox);
+    document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+    document.getElementById("btn2").disabled = false;
+    document.getElementById("bar").style.width = "50%";
+    html5QrcodeScanner.clear();
+    document.getElementById("reader").style.display = "none";
+  }, (error) => { /* log bising dikurangkan */ });
+}
+
+function startSecondScan() {
+  document.getElementById("reader").style.display = "block";
+  const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
+  html5QrcodeScanner.render((decodedText) => {
+    let secondBox = decodedText.trim();
+    sessionStorage.setItem("lastSecondBox", secondBox);
+    sessionStorage.setItem("hasScanned", "true");
+    document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+    document.getElementById("bar").style.width = "100%";
+    html5QrcodeScanner.clear();
+    document.getElementById("reader").style.display = "none";
+    
+    checkMatch(firstBox, secondBox);
+  }, (error) => { /* log bising dikurangkan */ });
+}
+
+// Pintu Pencetus Pemulihan Sesi (Bila halaman dimuatkan semula)
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
@@ -232,12 +168,12 @@ window.onload = function() {
     let secondBox = sessionStorage.getItem("lastSecondBox");
     if (firstBox) {
       document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-      document.getElementById("btn1").disabled = true;
+      document.getElementById("btn2").disabled = false;
+    }
+    if (secondBox) {
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("btn2").disabled = true;
-      
-      setProgress(2);
-      semakKeputusan(firstBox, secondBox);
+      document.getElementById("bar").style.width = "100%";
+      checkMatch(firstBox, secondBox);
     }
   }
 };
