@@ -222,14 +222,11 @@ function check(secondBox, isRestored = false) {
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    let successVideoBtn = document.getElementById("successVideoBtn");
-    if (successVideoBtn) {
-      successVideoBtn.onclick = function() {
-        sessionStorage.setItem(\"prevPage\", \"index.html\");
-        // Redirect to video.html locally instead of opening an external link
-        window.location.href = "video.html?type=letter_video&letter=" + fBox;
-      };
-    }
+    // DIKEMASKINI: Tukar window.open ke window.location.href untuk membuka video tempatan
+    document.getElementById("successVideoBtn").onclick = function() {
+      sessionStorage.setItem("prevPage", "index.html");
+      window.location.href = "video.html?type=letter_video&letter=" + firstBox;
+    };
 
     document.getElementById("successWriteBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html"); 
