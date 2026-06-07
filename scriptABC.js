@@ -28,69 +28,14 @@ const videoLinks = {
   Z: "https://www.starfall.com/h/abcs/letter-z/?mg=k"
 };
 
-let html5QrcodeScanner = null;
+// --- SISTEM AUDIO & INSTRUMEN ---
 let bgMusic = new Audio("LAGU/BG SOUND.mpeg");
 bgMusic.loop = true;
 bgMusic.volume = 0.2;
 
-// --- FUNGSI KAMERA ASAL ANDA (100% KEKAL, TIDAK DIUSIK) ---
-function startFirstScan() {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear().catch(err => console.log(err));
-  }
-  bgMusic.play().catch(e => console.log(e));
-
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render(onScanSuccessFirst, onScanErrorFirst);
-}
-
-function onScanSuccessFirst(decodedText, decodedResult) {
-  firstBox = decodedText.trim().toUpperCase();
-
-  document.getElementById("btn1").disabled = true;
-  document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-  document.getElementById("btn2").disabled = false;
-  
-  let progressBar = document.getElementById("bar");
-  if (progressBar) progressBar.style.width = "50%";
-  
-  document.getElementById("result").innerText = "Sila scan Box Kedua pula!";
-
-  html5QrcodeScanner.clear().then(() => {
-    document.getElementById("reader").innerHTML = "";
-  }).catch(err => console.log(err));
-}
-
-function onScanErrorFirst(errorMessage) {}
-
-function startSecondScan() {
-  if (html5QrcodeScanner) {
-    html5QrcodeScanner.clear().catch(err => console.log(err));
-  }
-
-  html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render(onScanSuccessSecond, onScanErrorSecond);
-}
-
-function onScanSuccessSecond(decodedText, decodedResult) {
-  let secondBox = decodedText.trim().toUpperCase();
-
-  document.getElementById("btn2").disabled = true;
-  document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-  
-  let progressBar = document.getElementById("bar");
-  if (progressBar) progressBar.style.width = "100%";
-
-  html5QrcodeScanner.clear().then(() => {
-    document.getElementById("reader").innerHTML = "";
-    semakKeputusan(firstBox, secondBox);
-  }).catch(err => console.log(err));
-}
-
-function onScanErrorSecond(errorMessage) {}
-// --- TAMAT FUNGSI KAMERA ASAL ---
-
-
+function startMusic() { bgMusic.play().catch(e => console.log(e)); }
+function coinSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); } // Menggantikan kesan bunyi coin/success
+function jumpSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); }
 function successSound() { let snd = new Audio("SOUND/SUCCESS.mp3"); snd.play().catch(() => {}); }
 function failSound() { let snd = new Audio("SOUND/FAIL.mp3"); snd.play().catch(() => {}); }
 
@@ -102,6 +47,105 @@ function speak(text) {
   }
 }
 
+// Menguruskan bar kemajuan kemajuan secara dinamik berdasarkan keperluan kod anda
+function setProgress(step) {
+  let progressBar = document.getElementById("bar");
+  if (progressBar) {
+    if (step === 1) progressBar.style.width = "50%";
+    if (step === 2) progressBar.style.width = "100%";
+  }
+}
+
+/* ================= SCAN FIRST ================= */
+function startFirstScan() {
+  startMusic();
+  speak(""); 
+  
+  document.getElementById("gameAreaContainer").style.display = "none";
+  document.getElementById("reader").style.display = "block";
+  let scanner = new Html5Qrcode("reader");
+  
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text) => {
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop().then(() => {
+        coinSound(); 
+        setProgress(1);
+        document.getElementById("btn1").disabled = true;
+        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+        document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+        document.getElementById("btn2").disabled = false;
+      }).catch(err => console.error(err));
+    }
+  ).catch(err => { startFirstScanFallback(); });
+}
+
+function startFirstScanFallback() {
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+    (text) => {
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop().then(() => {
+        coinSound(); 
+        setProgress(1);
+        document.getElementById("btn1").disabled = true;
+        document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
+        document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+        document.getElementById("btn2").disabled = false;
+      }).catch(err => console.error(err));
+    }
+  ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
+}
+
+/* ================= SCAN SECOND ================= */
+function startSecondScan() {
+  if (!firstBox) { alert("Scan box pertama dulu!"); return; }
+  document.getElementById("gameAreaContainer").style.display = "none";
+  document.getElementById("reader").style.display = "block";
+  let scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text) => {
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop().then(() => {
+        setProgress(2); 
+        document.getElementById("btn2").disabled = true;
+        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+        semakKeputusan(firstBox, secondBox);
+      }).catch(err => console.error(err));
+    }
+  ).catch(err => { startSecondScanFallback(); });
+}
+
+function startSecondScanFallback() {
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+    (text) => {
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop().then(() => {
+        setProgress(2); 
+        document.getElementById("btn2").disabled = true;
+        document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
+        semakKeputusan(firstBox, secondBox);
+      }).catch(err => console.error(err));
+    }
+  ).catch(err => console.error(err));
+}
+
+/* ================= PROSES SEMAKAN & UI ================= */
 function semakKeputusan(fBox, sBox) {
   let imageEl = document.getElementById("flashcardImg");
   let container = document.getElementById("gameAreaContainer");
@@ -109,6 +153,7 @@ function semakKeputusan(fBox, sBox) {
 
   document.getElementById("btn1").style.display = "none";
   document.getElementById("btn2").style.display = "none";
+  document.getElementById("reader").style.display = "none"; // Tutup ruangan kamera setelah selesai imbasan
 
   sessionStorage.setItem("lastFirstBox", fBox);
   sessionStorage.setItem("lastSecondBox", sBox);
@@ -125,7 +170,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/" + fBox + ".png";
     container.style.display = "block";
 
-    // PEMBETULAN ID: Menggunakan ID baharu dari fail index.html anda yang baru
+    // Tetapkan fungsi klik untuk ID butang success mengikut index.html terkini
     document.getElementById("successVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       if (targetLink) { window.open(targetLink, "_blank"); }
@@ -150,7 +195,7 @@ function semakKeputusan(fBox, sBox) {
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // PEMBETULAN ID: Menggunakan ID failVideoBtn yang baru
+    // Tetapkan fungsi klik untuk ID butang fail mengikut index.html terkini
     document.getElementById("failVideoBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html");
       window.location.href = "video.html?type=bonus_song&letter=" + (fBox || "A");
@@ -179,7 +224,7 @@ function resetGame() {
   window.location.href = "index.html";
 }
 
-// PEMBETULAN ID: Fungsi window.onload dipastikan tidak crash dengan elemen index.html baru
+/* ================= RESTORE STATUS SCANNING ================= */
 window.onload = function() {
   let hasScanned = sessionStorage.getItem("hasScanned");
   if (hasScanned === "true") {
@@ -191,9 +236,7 @@ window.onload = function() {
       document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
       document.getElementById("btn2").disabled = true;
       
-      let progressBar = document.getElementById("bar");
-      if (progressBar) progressBar.style.width = "100%";
-      
+      setProgress(2);
       semakKeputusan(firstBox, secondBox);
     }
   }
