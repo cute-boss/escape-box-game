@@ -45,50 +45,54 @@
       <img src="ABC LOGO.png" alt="ABC Logo" class="app-logo">
     </div>
 
-    <h3 id="videoTitle" style="font-size: 22px; margin: 10px 0;">Pemain Video</h3>
+    <h2 id="videoPageTitle" style="font-size: 24px; margin: 10px 0 5px 0;">🎥 Video Skrin</h2>
 
     <div class="video-section-container">
-      <div class="video-block" id="blockOne">
-        <div class="video-label" id="labelOne">Video</div>
-        <div class="video-container">
-          <video id="mainVideo" controls autoplay playsinline muted loop></video>
-        </div>
-      </div>
       
-      <div class="video-block" id="blockTwo" style="display: none;">
-        <div class="video-label" id="labelTwo">Cara Menulis Huruf Kecil</div>
+      <div class="video-block" id="videoBlockOne">
+        <div class="video-label" id="labelVideoOne">Video Paparan</div>
         <div class="video-container">
-          <video id="secondVideo" controls autoplay playsinline muted loop></video>
+          <video id="mainVideoPlayer" controls autoplay playsinline></video>
         </div>
       </div>
+
+      <div class="video-block" id="videoBlockTwo" style="display: none;">
+        <div class="video-label" id="labelVideoTwo">Video Tambahan</div>
+        <div class="video-container">
+          <video id="secondaryVideoPlayer" controls autoplay playsinline></video>
+        </div>
+      </div>
+
     </div>
 
-    <button class="btn-return-home" onclick="goBack()">⬅ Kembali</button>
+    <button class="btn-retry btn-return-home" onclick="goBack()">⬅ Kembali</button>
   </div>
 
   <script>
     const urlParams = new URLSearchParams(window.location.search);
-    let type = urlParams.get('type') || 'stroke';
-    let letter = urlParams.get('letter') || 'A'; 
+    const type = urlParams.get('type') || '';
+    const letter = urlParams.get('letter') || 'A';
 
-    let titleElement = document.getElementById("videoTitle");
-    let videoElement = document.getElementById("mainVideo");
-    let secondVideoElement = document.getElementById("secondVideo");
+    const titleElement = document.getElementById("videoPageTitle");
+    const videoElement = document.getElementById("mainVideoPlayer");
+    const secondVideoElement = document.getElementById("secondaryVideoPlayer");
     
-    let blockOne = document.getElementById("blockOne");
-    let blockTwo = document.getElementById("blockTwo");
-    let labelOne = document.getElementById("labelOne");
+    const labelOne = document.getElementById("labelVideoOne");
+    const labelTwo = document.getElementById("labelVideoTwo");
+    
+    const blockOne = document.getElementById("videoBlockOne");
+    const blockTwo = document.getElementById("videoBlockTwo");
 
     if (type === 'song') {
-      titleElement.innerText = "🎶 Lagu ABC";
-      titleElement.style.color = "#a855f7";
-      labelOne.innerText = "Lagu ABC";
-      videoElement.src = "LAGU/ABC SONG.mp4";
+      titleElement.innerText = "🎶 ABCs Alphabet Song";
+      titleElement.style.color = "#9c27b0"; 
+      labelOne.innerText = "Lagu Belajar Abjad";
+      videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
       
     } else if (type === 'bonus_song') {
       titleElement.innerText = "🔤 Belajar Huruf Besar & Kecil";
-      titleElement.style.color = "#ec4899";
+      titleElement.style.color = "#ec4899"; 
       labelOne.innerText = "Mengenal Huruf Besar & Kecil";
       videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
@@ -103,7 +107,7 @@
       videoElement.src = "LAGU/" + upper + lower + ".mp4"; 
       blockTwo.style.display = "none"; 
       
-    }else {
+    } else {
       titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + letter.toLowerCase() + ")";
       titleElement.style.color = "#06b6d4";
       
@@ -115,7 +119,6 @@
       blockTwo.style.display = "block";
     }
 
-    // Menguatkan jaminan autoplay berjalan lancar melalui kod skrip tambahan
     window.onload = function() {
       videoElement.play().catch(function(e) { console.log("Main video autoplay blocked", e); });
       if (blockTwo.style.display === "block") {
@@ -128,7 +131,7 @@
       if (previousPage && previousPage.includes("match.html")) {
         window.location.href = "match.html?letter=" + letter;
       } else {
-        window.location.href = "index.html?letter=" + letter;
+        window.location.href = "index.html";
       }
     }
   </script>
