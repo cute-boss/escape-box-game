@@ -87,19 +87,20 @@
       blockTwo.style.display = "none";
       
     } else if (type === 'bonus_song') {
-      titleElement.innerText = "🎶 ABCs Alphabet Song";
+      titleElement.innerText = "🔤 Belajar Huruf Besar & Kecil";
       titleElement.style.color = "#ec4899";
-      labelOne.innerText = "Lagu Belajar Abjad";
+      labelOne.innerText = "Mengenal Huruf Besar & Kecil";
       videoElement.src = "LAGU/ABCs ALPHABET SONG.mp4";
       blockTwo.style.display = "none";
       
     } else {
-      titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + ")";
+      titleElement.innerText = "🎥 Cara Menulis Huruf (" + letter.toUpperCase() + + letter.toLowerCase() +")";
       titleElement.style.color = "#06b6d4";
       
       labelOne.innerText = "Cara Menulis Huruf Besar (" + letter.toUpperCase() + ")";
       videoElement.src = "CARA MENULIS HURUF/" + letter.toUpperCase() + ".mp4";
-      
+
+      labelTwo.innerText = "Cara Menulis Huruf Kecil (" + letter.toLowerCase() + ")";
       secondVideoElement.src = "CARA MENULIS HURUF/" + letter.toLowerCase() + "_.mp4";
       blockTwo.style.display = "block";
     }
