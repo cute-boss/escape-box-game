@@ -222,9 +222,14 @@ function check(secondBox, isRestored = false) {
     imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    document.getElementById("successVideoBtn").onclick = function() {
-      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
-    };
+    let successVideoBtn = document.getElementById("successVideoBtn");
+    if (successVideoBtn) {
+      successVideoBtn.onclick = function() {
+        sessionStorage.setItem(\"prevPage\", \"index.html\");
+        // Redirect to video.html locally instead of opening an external link
+        window.location.href = "video.html?type=letter_video&letter=" + fBox;
+      };
+    }
 
     document.getElementById("successWriteBtn").onclick = function() {
       sessionStorage.setItem("prevPage", "index.html"); 
