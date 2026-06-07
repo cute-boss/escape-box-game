@@ -28,152 +28,233 @@ const videoLinks = {
   Z: "https://www.starfall.com/h/abcs/letter-z/?mg=k"
 };
 
-// Menguruskan Audio Kesan Bunyi (Sound Effects)
-function successSound() {
-  let audio = new Audio("LAGU/SUCCESS SOUND.mp3");
-  audio.play().catch(e => console.log("Audio play blocked", e));
+let audioCtx = null;
+let bgStarted = false;
+
+function initAudio() {
+  if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+}
+function resumeAudio() {
+  if (audioCtx && audioCtx.state === "suspended") { audioCtx.resume(); }
 }
 
+function coinSound() {
+  resumeAudio();
+  let o = audioCtx.createOscillator();
+  o.frequency.setValueAtTime(700, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(1200, audioCtx.currentTime + 0.1);
+  o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 120);
+}
 function failSound() {
-  let audio = new Audio("LAGU/FAIL SOUND.mp3");
-  audio.play().catch(e => console.log("Audio play blocked", e));
+  resumeAudio();
+  let o = audioCtx.createOscillator();
+  o.frequency.setValueAtTime(300, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(150, audioCtx.currentTime + 0.2);
+  o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 150);
+}
+function jumpSound() {
+  resumeAudio();
+  let o = audioCtx.createOscillator();
+  o.frequency.setValueAtTime(400, audioCtx.currentTime);
+  o.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.15);
+  o.connect(audioCtx.destination); o.start(); setTimeout(() => o.stop(), 150);
 }
 
-// Fungsi Sebutan Suara Melayu (Text-to-Speech)
+/* ================= PERBAIKAN ENJIN SUARA (SPEECH) ================= */
+let voices = [];
+function loadVoices() {
+  voices = speechSynthesis.getVoices();
+}
+// Pemicu automatik apabila senarai suara berubah dalam sistem peranti
+if (speechSynthesis.onvoiceschanged !== undefined) {
+  speechSynthesis.onvoiceschanged = loadVoices;
+}
+loadVoices();
+
+function getBestVoice() {
+  if (!voices.length) voices = speechSynthesis.getVoices();
+  
+  // 1. Cuba cari suara Bahasa Melayu asli (ms atau ms-MY) terlebih dahulu
+  let malayVoice = voices.find(v => v.lang.toLowerCase().includes("ms"));
+  if (malayVoice) return malayVoice;
+  
+  // 2. Jika tiada, cari suara Bahasa Inggeris yang bunyinya lembut/perempuan (selamat untuk sebutan)
+  let engFemaleVoice = voices.find(v => v.lang.toLowerCase().includes("en") && (v.name.toLowerCase().includes("female") || v.name.toLowerCase().includes("girl") || v.name.toLowerCase().includes("zira")));
+  if (engFemaleVoice) return engFemaleVoice;
+
+  return voices[0];
+}
+
 function speak(text) {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel(); // Hentikan suara sedia ada jika ada
-    let utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ms-MY'; // Set loghat Bahasa Melayu tetap
-    utterance.rate = 0.9;     // Kelajuan natural
-    window.speechSynthesis.speak(utterance);
+  // Batalkan sebarang suara tertunggak untuk mengelakkan sistem tersekat
+  speechSynthesis.cancel();
+  
+  // Pastikan suara dimuatkan semula sekiranya peranti lambat membaca senarai
+  if (!voices.length) loadVoices();
+
+  let msg = new SpeechSynthesisUtterance(text);
+  let selectedVoice = getBestVoice();
+  
+  if (selectedVoice) {
+    msg.voice = selectedVoice;
+    // Set kod bahasa secara manual mengikut suara yang dijumpai
+    msg.lang = selectedVoice.lang; 
+  } else {
+    msg.lang = "ms-MY"; // Pilihan kecemasan lalai (default fallback)
+  }
+  
+  msg.rate = 0.9;  // Kelajuan dikurangkan sedikit supaya sebutan lebih jelas untuk kanak-kanak
+  msg.pitch = 1.1; // Nada suara ditinggikan sedikit agar lebih ceria
+  
+  speechSynthesis.speak(msg);
+}
+/* ================================================================= */
+
+let bgMusic = new Audio("https://cdn.pixabay.com/audio/2022/10/25/audio_946b9c0c87.mp3");
+bgMusic.loop = true; bgMusic.volume = 0;
+function startMusic() {
+  if (!bgStarted) {
+    bgStarted = true;
+    bgMusic.play().then(() => { fadeInMusic(); }).catch(() => {});
   }
 }
+function fadeInMusic() {
+  let vol = 0;
+  let fade = setInterval(() => {
+    if (vol < 0.15) { vol += 0.01; bgMusic.volume = vol; } else { clearInterval(fade); }
+  }, 200);
+}
 
-// Fungsi Semakan Padanan Kod (Match Check)
-function checkMatch(fBox, sBox) {
-  let imageEl = document.getElementById("flashcardImg");
+function setProgress(step) {
+  document.getElementById("bar").style.width = (step === 1) ? "50%" : "100%";
+}
+
+/* ================= SCAN FIRST ================= */
+function startFirstScan() {
+  initAudio(); resumeAudio(); jumpSound(); startMusic();
+  // Mengaktifkan enjin suara secara senyap semasa butang pertama ditekan (Trik bypass sekatan peranti)
+  speak(""); 
+  
+  document.getElementById("gameAreaContainer").style.display = "none";
+  document.getElementById("reader").style.display = "block";
+  let scanner = new Html5Qrcode("reader");
+  
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text) => {
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop(); coinSound(); setProgress(1);
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+      document.getElementById("btn2").disabled = false;
+    }
+  ).catch(err => { startFirstScanFallback(); });
+}
+
+function startFirstScanFallback() {
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+    (text) => {
+      firstBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop(); coinSound(); setProgress(1);
+      document.getElementById("result").innerHTML = "✔ Box pertama: <b>" + firstBox + "</b><br>Seterusnya, scan box kedua";
+      document.getElementById("btn2").disabled = false;
+    }
+  ).catch(err => alert("Sila semak kebenaran akses kamera peranti anda."));
+}
+
+/* ================= SCAN SECOND ================= */
+function startSecondScan() {
+  if (!firstBox) { alert("Scan box pertama dulu!"); return; }
+  document.getElementById("gameAreaContainer").style.display = "none";
+  document.getElementById("reader").style.display = "block";
+  let scanner = new Html5Qrcode("reader");
+
+  scanner.start(
+    { facingMode: { exact: "environment" } },
+    {
+      fps: 15, qrbox: 280,
+      videoConstraints: { facingMode: { exact: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    },
+    (text) => {
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop(); setProgress(2); check(secondBox);
+    }
+  ).catch(err => { startSecondScanFallback(); });
+}
+
+function startSecondScanFallback() {
+  let scanner = new Html5Qrcode("reader");
+  scanner.start(
+    { facingMode: "environment" },
+    { fps: 15, qrbox: 280, videoConstraints: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+    (text) => {
+      let secondBox = text.includes("box=") ? text.split("box=")[1].toUpperCase() : text.toUpperCase().trim();
+      scanner.stop(); setProgress(2); check(secondBox);
+    }
+  ).catch(err => console.error(err));
+}
+
+/* ================= RESULT CHECK ================= */
+function check(secondBox) {
+  let ok = (firstBox === secondBox);
+  document.getElementById("btn1").style.display = "none";
+  document.getElementById("btn2").style.display = "none";
+  document.getElementById("reader").style.display = "none";
+
   let container = document.getElementById("gameAreaContainer");
+  let imageEl = document.getElementById("flashcardImg");
+  let targetLink = videoLinks[firstBox]; 
 
-  if (fBox.toUpperCase() === sBox.toUpperCase()) {
-    successSound();
+  if (ok) {
+    coinSound();
     document.getElementById("icon").innerHTML = "🎉";
     document.getElementById("icon").style.color = "#22c55e";
+    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Anda berjaya mencari pasangan huruf yang betul. 🥳</div>";
     
-    // Mesej Berjaya yang Tepat
-    document.getElementById("result").innerHTML = "<div class='good'>Tahniah! Padanan anda betul!</div>";
-    
-    // Suara Melayu Berjaya
-    setTimeout(() => { speak("Tahniah! Padanan anda betul!"); }, 400);
+    // Memberi sedikit ruang (delay) agar kesan bunyi coin tidak bertindih dengan suara teks
+    setTimeout(() => { speak("Tahniah! Anda berjaya mencari pasangan huruf yang betul"); }, 400);
 
-    // Paparkan Gambar Flashcard
-    imageEl.src = "FLASHCARD/" + fBox.toUpperCase() + ".png";
+    imageEl.src = "FLASHCARD/" + firstBox + ".png";
     container.style.display = "block";
 
-    // Konfigurasi Butang Berjaya
-    let targetLink = videoLinks[fBox.toUpperCase()];
     document.getElementById("successVideoBtn").onclick = function() {
       if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
 
     document.getElementById("successWriteBtn").onclick = function() {
-      sessionStorage.setItem(\"prevPage\", \"index.html\");
       window.location.href = "video.html?type=stroke&letter=" + firstBox;
     };
 
-    // Urus Paparan Blok Butang
     document.getElementById("actionButtons").style.display = "flex";
-    document.getElementById("failButtons").style.display = "none";
 
   } else {
     failSound();
     document.getElementById("icon").innerHTML = "😢";
     document.getElementById("icon").style.color = "#dc2626";
-    
-    // Mesej Gagal yang Tepat
     document.getElementById("result").innerHTML = "<div class='bad'>Jangan risau! Cuba lagi ya!</div>";
     
-    // Suara Melayu Gagal
+    // Memberi ruang jarak masa agar sebutan suara lancar
     setTimeout(() => { speak("Jangan risau, Cuba lagi ya"); }, 400);
 
-    // Tukar gambar kepada carta abjad tetap jika salah
+    // KEMASKINI: Menukar imej kepada fail ALPHABET LETTERS.png secara tetap jika gagal scan
     imageEl.src = "FLASHCARD/ALPHABET LETTERS.png";
     container.style.display = "block";
 
-    // Konfigurasi Butang Gagal (Memastikan firstBox digunakan dengan betul)
     document.getElementById("failVideoBtn").onclick = function() {
-      sessionStorage.setItem(\"prevPage\", \"index.html\");
-      window.location.href = "video.html?type=bonus_song&letter=" + (firstBox || "A");
+      if (targetLink) { window.open(targetLink, "_blank"); } else { alert("Pautan video tidak dijumpai!"); }
     };
 
-    // Urus Paparan Blok Butang
-    document.getElementById("actionButtons").style.display = "none";
     document.getElementById("failButtons").style.display = "flex";
   }
 }
 
-function goToPage(page) {
-  sessionStorage.setItem(\"prevPage\", \"index.html\");
-  window.location.href = firstBox ? page + "?letter=" + firstBox : page;
-}
-
-function goToPlayABC() {
-  sessionStorage.setItem(\"prevPage\", \"index.html\");
-  window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song";
-}
-
-function resetGame() {
-  sessionStorage.removeItem("lastFirstBox");
-  sessionStorage.removeItem("lastSecondBox");
-  sessionStorage.removeItem("hasScanned");
-  window.location.href = "index.html";
-}
-
-// Logik Imbasan Kamera & Membaca Kod QR/Bar
-function startFirstScan() {
-  document.getElementById("reader").style.display = "block";
-  const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    firstBox = decodedText.trim();
-    sessionStorage.setItem("lastFirstBox", firstBox);
-    document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-    document.getElementById("btn2").disabled = false;
-    document.getElementById("bar").style.width = "50%";
-    html5QrcodeScanner.clear();
-    document.getElementById("reader").style.display = "none";
-  }, (error) => { /* log bising dikurangkan */ });
-}
-
-function startSecondScan() {
-  document.getElementById("reader").style.display = "block";
-  const html5QrcodeScanner = new Html5QrcodeScanner("reader", { fps: 10, qrbox: 250 });
-  html5QrcodeScanner.render((decodedText) => {
-    let secondBox = decodedText.trim();
-    sessionStorage.setItem("lastSecondBox", secondBox);
-    sessionStorage.setItem("hasScanned", "true");
-    document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-    document.getElementById("bar").style.width = "100%";
-    html5QrcodeScanner.clear();
-    document.getElementById("reader").style.display = "none";
-    
-    checkMatch(firstBox, secondBox);
-  }, (error) => { /* log bising dikurangkan */ });
-}
-
-// Pintu Pencetus Pemulihan Sesi (Bila halaman dimuatkan semula)
-window.onload = function() {
-  let hasScanned = sessionStorage.getItem("hasScanned");
-  if (hasScanned === "true") {
-    firstBox = sessionStorage.getItem("lastFirstBox");
-    let secondBox = sessionStorage.getItem("lastSecondBox");
-    if (firstBox) {
-      document.getElementById("btn1").innerText = "Box Pertama: " + firstBox;
-      document.getElementById("btn2").disabled = false;
-    }
-    if (secondBox) {
-      document.getElementById("btn2").innerText = "Box Kedua: " + secondBox;
-      document.getElementById("bar").style.width = "100%";
-      checkMatch(firstBox, secondBox);
-    }
-  }
-};
+function openBonusLink(url) { window.open(url, "_blank"); }
+function goToPage(page) { window.location.href = firstBox ? page + "?letter=" + firstBox : page; }
+function goToPlayABC() { window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; }
+function resetGame() { bgMusic.pause(); window.location.href = "index.html"; }
