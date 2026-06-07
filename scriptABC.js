@@ -1,33 +1,4 @@
 let firstBox = null;
-const videoLinks = {
-  A: "https://www.starfall.com/h/abcs/letter-a/?mg=k",
-  B: "https://www.starfall.com/h/abcs/letter-b/?mg=k",
-  C: "https://www.starfall.com/h/abcs/letter-c/?mg=k",
-  D: "https://www.starfall.com/h/abcs/letter-d/?mg=k",
-  E: "https://www.starfall.com/h/abcs/letter-e/?mg=k",
-  F: "https://www.starfall.com/h/abcs/letter-f/?mg=k",
-  G: "https://www.starfall.com/h/abcs/letter-g/?mg=k",
-  H: "https://www.starfall.com/h/abcs/letter-h/?mg=k",
-  I: "https://www.starfall.com/h/abcs/letter-i/?mg=k",
-  J: "https://www.starfall.com/h/abcs/letter-j/?mg=k",
-  K: "https://www.starfall.com/h/abcs/letter-k/?mg=k",
-  L: "https://www.starfall.com/h/abcs/letter-l/?mg=k",
-  M: "https://www.starfall.com/h/abcs/letter-m/?mg=k",
-  N: "https://www.starfall.com/h/abcs/letter-n/?mg=k",
-  O: "https://www.starfall.com/h/abcs/letter-o/?mg=k",
-  P: "https://www.starfall.com/h/abcs/letter-p/?mg=k",
-  Q: "https://www.starfall.com/h/abcs/letter-q/?mg=k",
-  R: "https://www.starfall.com/h/abcs/letter-r/?mg=k",
-  S: "https://www.starfall.com/h/abcs/letter-s/?mg=k",
-  T: "https://www.starfall.com/h/abcs/letter-t/?mg=k",
-  U: "https://www.starfall.com/h/abcs/letter-u/?mg=k",
-  V: "https://www.starfall.com/h/abcs/letter-v/?mg=k",
-  W: "https://www.starfall.com/h/abcs/letter-w/?mg=k",
-  X: "https://www.starfall.com/h/abcs/letter-x/?mg=k",
-  Y: "https://www.starfall.com/h/abcs/letter-y/?mg=k",
-  Z: "https://www.starfall.com/h/abcs/letter-z/?mg=k"
-};
-
 let audioCtx = null;
 let bgStarted = false;
 
@@ -268,7 +239,7 @@ function goToPage(page) {
 
 function goToPlayABC() { 
   sessionStorage.setItem("prevPage", "index.html"); 
-  window.location.href = firstBox ? "video.html?type=song&letter=" + firstBox : "video.html?type=song"; 
+  window.location.href = \"video.html?type=song\";
 }
 
 function resetGame() { 
